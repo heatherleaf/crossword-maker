@@ -619,15 +619,15 @@ function set_visibility(elem, visible) {
 function filter_wordlist() {
     dom.wordlist.intro.innerHTML = "";
     dom.wordlist.content.innerHTML = "";
+    set_visibility(dom.wordlist.filter, the_wordlist.length);
+    if (the_wordlist.length == 0) {
+        set_wordlist_heading("Inga ord passar");
+        return;
+    }
     let regex = dom.wordlist.filter.value.toUpperCase().replaceAll("", ".*");
     regex = new RegExp("^" + regex + "$");
     let filtered = the_wordlist.filter((cw) => cw.word.match(regex));
     console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
-    set_visibility(dom.wordlist.filter, filtered.length);
-    if (filtered.length == 0) {
-        set_wordlist_heading("Inga ord passar");
-        return;
-    }
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     if (filtered.length <= config.maxresults) {
         if (filtered.length == the_wordlist.length) {
