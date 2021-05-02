@@ -4,7 +4,7 @@ var dom;
 const config = {
     width: 15,
     height: 10,
-    alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖÜ",
+    alphabet: "[ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖÜ]", // a regexp matching one letter
     maxresults: 200,
 };
 
@@ -93,7 +93,7 @@ function dictionary_size(name) {
 function convert_words_to_dictionary(text) {
     let words = text.split(/\s+/).filter((w) => w);
     let dictionary = {};
-    let isword = new RegExp("^[" + config.alphabet + "]+$");
+    let isword = new RegExp("^" + config.alphabet + "+$");
     for (let w of words) {
         w = w.toUpperCase();
         if (isword.test(w)) {
@@ -492,7 +492,7 @@ function find_matching_words() {
         let time = -Date.now();
         let wordlen = regex.length;
 
-        regex = new RegExp("^" + regex.replaceAll("?", "\\w") + "$");
+        regex = new RegExp("^" + regex.replaceAll("?", config.alphabet) + "$");
         let wordlist = the_dictionary[wordlen];
         if (wordlist) {
             let sel = selected_cword();
