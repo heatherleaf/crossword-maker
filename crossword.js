@@ -629,20 +629,18 @@ function filter_wordlist() {
     let filtered = the_wordlist.filter((cw) => cw.word.match(regex));
     console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
-    if (filtered.length <= config.maxresults) {
-        if (filtered.length == the_wordlist.length) {
-            set_wordlist_heading(`Visar ${filtered.length} passande ord`);
-        } else {
-            set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
-        }
-    } else {
+    if (filtered.length > config.maxresults) {
         set_wordlist_heading(`Visar ${config.maxresults} ord av ${the_wordlist.length} passande`);
         dom.wordlist.intro.innerHTML = 
             "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" + dom.wordlist.intro.innerHTML;
-        while (filtered.length > config.maxresults) {
-            filtered.splice(Math.floor(Math.random() * filtered.length), 1);
-        }
+        shuffle(filtered);
+        filtered.length = config.maxresults;
+    } else if (filtered.length == the_wordlist.length) {
+        set_wordlist_heading(`Visar ${filtered.length} passande ord`);
+    } else {
+        set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
     }
+    filtered.sort((a,b) => a.word.localeCompare(b.word));
     for (let cw of filtered) {
         let btn = document.createElement('button');
         dom.wordlist.content.append(btn);
@@ -652,6 +650,13 @@ function filter_wordlist() {
             deselect_crossword();
         }).bind(the_crossword);
     }
+}
+
+function shuffle(list) {
+    for (let x of list) {
+        x.rank = Math.random();
+    }
+    list.sort((a,b) => a.rank - b.rank);
 }
 
 function add_to_wordlist(word) {
