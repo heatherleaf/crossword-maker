@@ -78,13 +78,6 @@ select::-ms-expand {
   display: none;
 }
 
-asds#label-upload-dictionary {
-    border: 1px solid #ccc;
-    display: inline-block;
-    padding: 6px 12px;
-    cursor: pointer;
-}
-
 #main-container {
     display: flex;
     flex-wrap: wrap;
