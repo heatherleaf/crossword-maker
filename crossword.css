@@ -142,6 +142,11 @@ select::-ms-expand {
     text-transform: uppercase;
 }
 
+#button-wordlist-reload {
+    padding: 0 4px;
+    border: 0;
+}
+
 #wordlist-content button {
     padding: 1px 6px;
     font-family: monospace;

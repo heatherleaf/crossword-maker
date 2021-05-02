@@ -25,12 +25,13 @@ function initialize() {
             heading:   document.getElementById("wordlist-heading"),
             intro:     document.getElementById("wordlist-intro"),
             filter:    document.getElementById("wordlist-filter"),
+            wrapper:   document.getElementById("wordlist-filter-wrapper"),
             content:   document.getElementById("wordlist-content"),
         },
         buttons: {
             reset:   document.getElementById("button-reset"),
             help:    document.getElementById("button-help"),
-            // redraw:  document.getElementById("button-redraw"),
+            reload:  document.getElementById("button-wordlist-reload"),
             upload:  document.getElementById("button-upload-dictionary"),
             resize:  document.getElementsByClassName("button-resize"),
         },
@@ -592,7 +593,7 @@ function set_wordlist_heading(head) {
 }
 
 function clear_wordlist() {
-    set_visibility(dom.wordlist.filter, false);
+    set_visibility(dom.wordlist.wrapper, false);
     set_visibility(dom.wordlist.container, false);
     set_wordlist_heading("");
     dom.wordlist.content.innerHTML = "";
@@ -601,14 +602,10 @@ function clear_wordlist() {
 }
 
 function start_wordlist() {
-    dom.wordlist.filter.oninput = filter_wordlist;
+    dom.wordlist.filter.oninput = show_wordlist;
+    dom.buttons.reload.onclick = show_wordlist;
     set_wordlist_heading("Searching...");
     set_visibility(dom.wordlist.container, true);
-}
-
-function show_wordlist() {
-    filter_wordlist();
-    dom.wordlist.filter.focus();
 }
 
 function set_visibility(elem, visible) {
@@ -616,10 +613,10 @@ function set_visibility(elem, visible) {
     elem.style.visibility = visible ? "visible" : "hidden";
 }
 
-function filter_wordlist() {
+function show_wordlist() {
     dom.wordlist.intro.innerHTML = "";
     dom.wordlist.content.innerHTML = "";
-    set_visibility(dom.wordlist.filter, the_wordlist.length);
+    set_visibility(dom.wordlist.wrapper, the_wordlist.length);
     if (the_wordlist.length == 0) {
         set_wordlist_heading("Inga ord passar");
         return;
@@ -650,6 +647,7 @@ function filter_wordlist() {
             deselect_crossword();
         }).bind(the_crossword);
     }
+    dom.wordlist.filter.focus();
 }
 
 function shuffle(list) {
