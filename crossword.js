@@ -32,6 +32,7 @@ function initialize() {
             reset:   document.getElementById("button-reset"),
             help:    document.getElementById("button-help"),
             reload:  document.getElementById("button-wordlist-reload"),
+            addword: document.getElementById("button-wordlist-addword"),
             upload:  document.getElementById("button-upload-dictionary"),
             resize:  document.getElementsByClassName("button-resize"),
         },
@@ -593,7 +594,6 @@ function set_wordlist_heading(head) {
 }
 
 function clear_wordlist() {
-    set_visibility(dom.wordlist.wrapper, false);
     set_visibility(dom.wordlist.container, false);
     set_wordlist_heading("");
     dom.wordlist.content.innerHTML = "";
@@ -604,38 +604,54 @@ function clear_wordlist() {
 function start_wordlist() {
     dom.wordlist.filter.oninput = show_wordlist;
     dom.buttons.reload.onclick = show_wordlist;
-    set_wordlist_heading("Searching...");
+    dom.buttons.addword.onclick = add_filter_to_crossword;
     set_visibility(dom.wordlist.container, true);
+    if (selected_cword().word)
+        dom.wordlist.filter.maxLength = selected_cword().word.length;
+    else
+        dom.wordlist.filter.removeAttribute('maxLength');
 }
 
 function set_visibility(elem, visible) {
-    if (!visible) elem.blur();
-    elem.style.visibility = visible ? "visible" : "hidden";
+    elem.style.display = visible ? "" : "none";
+}
+
+function add_filter_to_crossword() {
+    let newword = selected_cword();
+    newword.word = dom.wordlist.filter.value.toUpperCase();
+    add_word_to_crossword(newword);
 }
 
 function show_wordlist() {
     dom.wordlist.intro.innerHTML = "";
     dom.wordlist.content.innerHTML = "";
-    set_visibility(dom.wordlist.wrapper, the_wordlist.length);
-    if (the_wordlist.length == 0) {
-        set_wordlist_heading("Inga ord passar");
-        return;
-    }
-    let regex = dom.wordlist.filter.value.toUpperCase().replaceAll("", ".*");
+    let notletter = new RegExp("[^" + config.alphabet + "]", "g");
+    let filtervalue = dom.wordlist.filter.value;
+    filtervalue = filtervalue.toUpperCase().replaceAll(notletter, "");
+    dom.wordlist.filter.value = filtervalue;
+    let regex = filtervalue.replaceAll("", ".*");
     regex = new RegExp("^" + regex + "$");
     let filtered = the_wordlist.filter((cw) => cw.word.match(regex));
     console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
-    if (filtered.length > config.maxresults) {
+    set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
+    set_visibility(dom.buttons.addword, dom.wordlist.filter.value.length == selected_cword().word.length);
+    if (the_wordlist.length == 0) {
+        set_wordlist_heading("Inga ord passar");
+        dom.wordlist.intro.innerHTML = "Vill du lägga till ett eget ord?";
+    } else if (filtered.length > config.maxresults) {
         set_wordlist_heading(`Visar ${config.maxresults} ord av ${the_wordlist.length} passande`);
         dom.wordlist.intro.innerHTML = 
-            "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" + dom.wordlist.intro.innerHTML;
+            "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" +
+            "Filtrera genom att skriva bokstäver i sökrutan:";
         shuffle(filtered);
         filtered.length = config.maxresults;
     } else if (filtered.length == the_wordlist.length) {
         set_wordlist_heading(`Visar ${filtered.length} passande ord`);
+        dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     } else {
         set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
+        dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     }
     filtered.sort((a,b) => a.word.localeCompare(b.word));
     for (let cw of filtered) {
@@ -647,7 +663,7 @@ function show_wordlist() {
             deselect_crossword();
         }).bind(the_crossword);
     }
-    dom.wordlist.filter.focus();
+    window.setTimeout(() => dom.wordlist.filter.focus(), 100);
 }
 
 function shuffle(list) {
