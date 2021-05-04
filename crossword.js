@@ -82,6 +82,7 @@ function add_dictionary(name, dict) {
     opt.value = name;
     opt.text = `${name} (${dictionary_size(name)} ord)`;
     dom.info.dictselect.add(opt);
+    console.log(`Added dictionary: ${name}, size ${dictionary_size(name)} words`);
 }
 
 function dictionary_size(name) {
@@ -110,6 +111,7 @@ function select_dictionary() {
     deselect_crossword();
     let name = dom.info.dictselect.value;
     the_dictionary = dictionaries[name];
+    console.log(`Selected dictionary: ${name}`);
 }
 
 function upload_dictionary() {
@@ -219,7 +221,6 @@ function init_crossword(width, height) {
     }
     document.onmouseup = on_mouse_up;
     dom.buttons.reset.onclick = clear_crossword;
-    // dom.buttons.redraw.onclick = redraw_crossword;
     for (let btn of dom.buttons.resize) {
         btn.onclick = resize_crossword.bind(btn);
     }

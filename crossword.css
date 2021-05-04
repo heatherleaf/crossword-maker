@@ -46,7 +46,7 @@ div {
     display: none;
 }
 
-select, button, #label-upload-dictionary {
+select, button, label {
     font-size: 16px;
     border: 1px solid grey;
     border-radius: 8px;
@@ -60,8 +60,22 @@ select, button, #label-upload-dictionary {
     appearance: none;
 }
 
-select:hover, button:hover, #label-upload-dictionary:hover, #crossword-table td:hover {
+select:hover, button:hover, label:hover, #crossword-table td:hover {
     background-color: #eee;
+}
+
+#crossword-wrapper button, #wordlist-filter-wrapper button {
+    padding: 0;
+    height: 24px;
+    padding: 0 8px;
+    border: 0;
+    background-color: #eee;
+}
+
+#wordlist-content button {
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 20px;
 }
 
 /* Arrow icon */
@@ -93,12 +107,6 @@ select::-ms-expand {
     border-style: none;
     vertical-align: middle;
     text-align: center;
-}
-
-#crossword-wrapper button {
-    padding: 0;
-    height: 30px;
-    width: 30px;
 }
 
 #crossword-table {
@@ -140,17 +148,6 @@ select::-ms-expand {
 
 #wordlist-filter {
     text-transform: uppercase;
-}
-
-#button-wordlist-reload {
-    padding: 0 4px;
-    border: 0;
-}
-
-#wordlist-content button {
-    padding: 1px 6px;
-    font-family: monospace;
-    font-size: 20px;
 }
 
 /* "Fork me on GitHub", taken from: https://github.com/tholman/github-corners */
