@@ -518,10 +518,9 @@ function find_matching_words() {
         return;
     }
     start_wordlist();
-    window.setTimeout(() => {
+    {
         let time = -Date.now();
         let wordlen = regex.length;
-
         regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
         let wordlist = the_dictionary[wordlen];
         if (wordlist) {
@@ -536,11 +535,10 @@ function find_matching_words() {
                 }
             }
         }
-
         time += Date.now();
         console.log(`${found} matches, in ${time} ms`);
         show_wordlist();
-    }, 100);
+    }
 }
 
 function selection_start() {
