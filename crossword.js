@@ -74,10 +74,7 @@ function init_dictionary() {
 }
 
 function add_dictionary(name, dict) {
-    if (typeof(dict) === "string") {
-        dict = convert_words_to_dictionary(dict);
-    }
-    dictionaries[name] = dict;
+    dictionaries[name] = convert_dictionary(dict);
     let opt = document.createElement('option');
     opt.value = name;
     opt.text = `${name} (${dictionary_size(name)} ord)`;
@@ -93,17 +90,47 @@ function dictionary_size(name) {
     return size;
 }
 
-function convert_words_to_dictionary(text) {
-    let words = text.split(/\s+/).filter((w) => w);
+function convert_dictionary(dict) {
     let dictionary = {};
+    function add_to_dict(word, value=true) {
+        word = word.toUpperCase();
+        if (!dictionary[word.length]) dictionary[word.length] = {};
+        dictionary[word.length][word] = value;
+    }
     let isword = new RegExp("^[" + config.alphabet + "]+$", "i");
-    for (let w of words) {
-        w = w.toUpperCase();
-        if (isword.test(w)) {
-            if (!dictionary[w.length]) dictionary[w.length] = {};
-            dictionary[w.length][w] = true;
+    if (typeof dict === "string") {
+        // The dictionary is a string of words separated by whitespace
+        for (let word of dict.split(/\s+/)) {
+            if (isword.test(word)) {
+                add_to_dict(word);
+            } else {
+                console.error(`Not a word: "${word}" -- not adding`);
+            }
+        }
+    } else {
+        for (let key in dict) {
+            if (isword.test(key)) {
+                // The dictionary is of the form {word: value, word: value, ...}
+                add_to_dict(key, dict[key]);
+            } else if (!isNaN(Number(key))) {
+                // The dictionary is of the form
+                // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
+                let len = Number(key);
+                for (let word in dict[key]) {
+                    if (isword.test(word)) {
+                        if (word.length != len) {
+                            console.error(`Not of given length ${len}: "${word}" -- adding anyway`);
+                        }
+                        add_to_dict(word, dict[key][word]);
+                    }
+                }
+            } else {
+                console.error(`Not a word: "${key}" -- not adding`);
+            }
         }
     }
+    // The final dictionary is of the form
+    // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
     return dictionary;
 }
 
