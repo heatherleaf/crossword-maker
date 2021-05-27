@@ -98,13 +98,36 @@ function convert_dictionary(dict) {
         dictionary[word.length][word] = value;
     }
     let isword = new RegExp("^[" + config.alphabet + "]+$", "i");
+    let not_added = 0;
     if (typeof dict === "string") {
-        // The dictionary is a string of words separated by whitespace
-        for (let word of dict.split(/\s+/)) {
-            if (isword.test(word)) {
-                add_to_dict(word);
-            } else {
-                console.error(`Not a word: "${word}" -- not adding`);
+        // The dictionary is a string of one word per line
+        // Optionally, a second "word" in the line is a Base64-encoded binary word vector
+        for (let line of dict.split(/[\r\n]+/)) {
+            line = line.trim().split(/\s+/);
+            if (line.length >= 1) {
+                let word = line[0];
+                if (!isword.test(word)) {
+                    not_added++;
+                    // console.warn(`Not a word: "${line[0]}" -- not adding`);
+                } else if (line.length == 1) {
+                    add_to_dict(word);
+                } else if (line.length == 2) {
+                    let vector = parse_base64_bitvector(line[1]);
+                    if (!vector) {
+                        not_added++;
+                        // console.warn(`Not a base64 bitvector: "${line.join(' ')}" -- not adding`);
+                    } else {
+                        add_to_dict(word, vector);
+                    }
+                } else {
+                    let vector = parse_wordvector(line.slice(1));
+                    if (vector.some(isNaN)) {
+                        not_added++;
+                        // console.warn(`Not a word vector: "${line.join(' ')}" -- not adding`);
+                    } else {
+                        add_to_dict(word, vector);
+                    }
+                }
             }
         }
     } else {
@@ -112,6 +135,9 @@ function convert_dictionary(dict) {
             if (isword.test(key)) {
                 // The dictionary is of the form {word: value, word: value, ...}
                 add_to_dict(key, dict[key]);
+                if (dict[key] instanceof Array) {
+                    let vals = Object.values(dict[key]);
+                }
             } else if (!isNaN(Number(key))) {
                 // The dictionary is of the form
                 // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
@@ -119,16 +145,21 @@ function convert_dictionary(dict) {
                 for (let word in dict[key]) {
                     if (isword.test(word)) {
                         if (word.length != len) {
-                            console.error(`Not of given length ${len}: "${word}" -- adding anyway`);
+                            console.warn(`Not of given length ${len}: "${word}" -- adding anyway`);
                         }
                         add_to_dict(word, dict[key][word]);
+                    } else {
+                        not_added++;
+                        // console.warn(`Not a word: "${line[0]}" -- not adding`);
                     }
                 }
             } else {
-                console.error(`Not a word: "${key}" -- not adding`);
+                not_added++;
+                // console.warn(`Not a word: "${key}" -- not adding`);
             }
         }
     }
+    if (not_added > 0) console.log(`--> ${not_added} words not added to dictionary`);
     // The final dictionary is of the form
     // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
     return dictionary;
@@ -238,6 +269,11 @@ var the_crossword;
 function init_crossword(width, height) {
     the_crossword = {
         cwords: [],
+        theme: {
+            words: [],
+            vector: null,
+            sim: 0,
+        },
         selection: {
             start: null,
             cword: null,
@@ -368,6 +404,7 @@ function add_word_to_crossword(cword, dryrun=false) {
         console.log(`Added "${cword.word}" at ${cword.x}:${cword.y}${cword.horiz?"\u2192":"\u2193"}`);
         add_word_to_crossword(cword, true);
         the_crossword.cwords.push(cword);
+        calculate_theme();
     }
     let cell = crossword_cell(cword.x, cword.y);
     for (let ch of cword.word) {
@@ -529,7 +566,7 @@ function find_matching_words() {
                 if (regex.test(word)) {
                     if (check_constraints(word, constraints)) {
                         found++;
-                        let cword = {word:word, x:sel.x, y:sel.y, horiz:sel.horiz};
+                        let cword = {word:word, x:sel.x, y:sel.y, horiz:sel.horiz, value:wordlist[word]};
                         let choice = add_to_wordlist(cword);
                     }
                 }
@@ -611,7 +648,33 @@ function on_mouse_enter(evt) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Wordlist
+// Theme
+
+function calculate_theme() {
+    let cwords = the_crossword.cwords.filter((w) => is_wordvector(w.value));
+
+    // The number of words in the theme group is 1/2 of the words in the crossword, but at most 5:
+    let groupsize = Math.min(Math.ceil(cwords.length / 2), 5);
+    if (groupsize > 1) {
+        let combinations = cwords.length <= 15 ? yield_combinations : random_combinations;
+        let similarities = [];
+        for (let comb of combinations(cwords, groupsize, 3000)) {
+            let average = average_vectors(...comb.map((w) => w.value));
+            let sim = comb.reduce((sum, w) => sum + cosine_similarity(w.value, average), 0) / comb.length;
+            similarities.push({
+                words: comb.map((w) => w.word),
+                vector: average,
+                sim: sim,
+            });
+        }
+        similarities.sort((a,b) => b.sim - a.sim);
+        the_crossword.theme = similarities[0];
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Wordlist suggestions
 
 var the_wordlist;
 
@@ -662,6 +725,13 @@ function show_wordlist() {
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
     set_visibility(dom.buttons.addword, dom.wordlist.filter.value.length == selected_cword().word.length);
+
+    if (the_crossword.theme.sim > 0) {
+        shuffle_by_vector_similarity(filtered, the_crossword.theme.sim, the_crossword.theme.vector);
+    } else {
+        shuffle(filtered);
+    }
+
     if (the_wordlist.length == 0) {
         set_wordlist_heading("Inga ord passar");
         dom.wordlist.intro.innerHTML = "Vill du lägga till ett eget ord?";
@@ -670,7 +740,6 @@ function show_wordlist() {
         dom.wordlist.intro.innerHTML = 
             "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" +
             "Filtrera genom att skriva bokstäver i sökrutan:";
-        shuffle(filtered);
         filtered.length = config.maxresults;
     } else if (filtered.length == the_wordlist.length) {
         set_wordlist_heading(`Visar ${filtered.length} passande ord`);
@@ -679,7 +748,7 @@ function show_wordlist() {
         set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
         dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     }
-    filtered.sort((a,b) => a.word.localeCompare(b.word));
+    // filtered.sort((a,b) => a.word.localeCompare(b.word));
     for (let cw of filtered) {
         let btn = document.createElement('button');
         dom.wordlist.content.append(btn);
@@ -692,13 +761,133 @@ function show_wordlist() {
     window.setTimeout(() => dom.wordlist.filter.focus(), 100);
 }
 
-function shuffle(list) {
-    for (let x of list) {
-        x.rank = Math.random();
-    }
-    list.sort((a,b) => a.rank - b.rank);
-}
-
 function add_to_wordlist(word) {
     the_wordlist.push(word);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Utilities for selecting and shuffling
+
+// Fisher–Yates shuffle:
+// https://en.wikipedia.org/wiki/Fisher–Yates_shuffle
+function shuffle(arr) {
+    for (let i = arr.length-1; i > 0; i--) {
+        let index = Math.floor((i + 1) * Math.random());
+        [arr[i], arr[index]] = [arr[index], arr[i]];
+    }
+}
+
+function shuffle_by_vector_similarity(words, defaultsim, simvector) {
+    for (let w of words) {
+        let sim = defaultsim;
+        if (is_wordvector(w.value)) {
+            sim = cosine_similarity(w.value, simvector);
+        }
+        // w.rank = -sim;
+        w.rank = Math.random() ** sim;
+        // w.rank = 1 - sim + Math.random() / 10;
+        // w.rank = Math.random() * (1 - sim);
+        // w.rank = -(Math.random() ** (1.0 / sim));
+        w.sim = sim;
+    }
+    words.sort((w,v) => w.rank - v.rank);
+}
+
+// Generator yielding all possible combinations
+// Note: (15 choose 5) > 3000 and (20 choose 5) > 15000
+// so for larger crosswords we should use random sampling instead
+function* yield_combinations(arr, k) {
+    if (arr.length == k) yield arr;
+    else if (k == 0) yield [];
+    else {
+        for (let rest of yield_combinations(arr.slice(1), k-1)) yield [arr[0], ...rest];
+        for (let rest of yield_combinations(arr.slice(1), k)) yield rest;
+    }
+}
+
+// Generator yielding `max` random combinations
+// Note 1: this shuffles the array in-place!
+// Note 2: this might yield duplicates
+function* random_combinations(arr, k, max) {
+    for (let i = 0; i < max; i++) {
+        shuffle(arr);
+        yield arr.slice(0, k);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Word vectors
+
+function parse_base64_bitvector(base64string) {
+    try {
+        return Uint8Array.from(atob(base64string), c => c.charCodeAt(0));
+    } catch(e) {
+        return null;
+    }
+}
+
+function expand_bitvector(vector) {
+    if (vector instanceof Uint8Array) {
+        return new Int8Array(8 * vector.length).map(
+            (_,i) => vector[Math.floor(i / 8)] & (128 >> (i % 8)) ? 1 : -1
+        );
+    } else {
+        return vector;
+    }
+}
+
+function lookup_vector(vector, i) {
+    if (vector instanceof Uint8Array) {
+        return vector[Math.floor(i / 8)] & (128 >> (i % 8)) ? 1 : -1;
+    } else {
+        return vector[i];
+    }
+}
+
+function is_wordvector(vector) {
+    return vector && vector.BYTES_PER_ELEMENT;
+}
+
+function parse_wordvector(vector) {
+    if (typeof(vector) === "string") {
+        vector = vector.trim().split(/\s+/);
+    }
+    vector = vector.map(parseFloat);
+    if (!vector.every(isFinite)) {
+        return null;
+    } else if (!vector.every(Number.isInteger)) {
+        return Float32Array.from(vector);
+    } else if (vector.every((n) => -128 <= n && n <= 127)) {
+        return Int8Array.from(vector);
+    } else if (vector.every((n) => -32768 <= n && n <= 32767)) {
+        return Int16Array.from(vector);
+    } else {
+        return null;
+    }
+}
+
+function add_vectors(vec, ...vectors) {
+    return expand_bitvector(vec).map(
+        (val, i) => vectors.reduce((sum, v) => sum + lookup_vector(v, i), val)
+    );
+}
+
+function average_vectors(vec, ...vectors) {
+    let size = 1 + vectors.length;
+    return expand_bitvector(vec).map(
+        (val, i) => vectors.reduce((sum, v) => sum + lookup_vector(v, i), val) / size
+    );
+}
+
+function dot_product(vec1, vec2) {
+    return expand_bitvector(vec1).reduce((sum, val, i) => sum + val * lookup_vector(vec2, i), 0);
+}
+
+function cosine_similarity(vec1, vec2) {
+    return (dot_product(vec1, vec2)) / (magnitude(vec1) * magnitude(vec2));
+}
+
+function magnitude(vec) {
+    return Math.sqrt(expand_bitvector(vec).reduce((sum, val) => sum + val*val, 0));
 }
