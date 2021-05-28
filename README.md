@@ -21,7 +21,7 @@ All lexicons contain the 30 000 most common words from the source texts. The Swe
 
 If the words in lexicon have associated word vectors (from word embeddings), the tool calculates a theme from the current words in the crossword, and suggests new words depending on how close they are to the current theme.
 
-All the example lexicons above have word vectors. They are 144-dimensional binary word vectors, reduced from aligned 300-dimensional word FastText embeddings, taken from here: https://fasttext.cc/docs/en/aligned-vectors.html
+All the example lexicons above have word vectors. They are 96-dimensional binary word vectors, reduced from aligned 300-dimensional word FastText embeddings, taken from here: https://fasttext.cc/docs/en/aligned-vectors.html
 
 ## Lexicon format
 
@@ -43,7 +43,7 @@ KATMANDU 0.0461 -0.1016 0.0069 -0.0144 0.0503 -0.0161 -0.0649 -0.0635 0.0266 0.0
 ...
 ```
 
-If you have binary word vectors (i.e., every number is either -1 or +1), then you can store them very compactly as Base-64 encoded binary numbers (where bit 0 means -1 and bit 1 means +1). Here is an example of 144-dimensional binary vectors:
+If you have binary word vectors (i.e., every number is either -1 or +1), then you can store them very compactly as Base-64 encoded binary numbers (where bit 0 means -1 and bit 1 means +1). Here are examples of 96-dimensional binary vectors:
 
 ```
 KOKBOK /fPGwOotDqxxser/
