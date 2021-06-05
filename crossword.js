@@ -485,10 +485,13 @@ function cells_to_cword(start, goal) {
         // swap start, goal if necessary
         if (dx + dy < 0) [start, goal] = [goal, start];
     }
-    let word = new Array(horiz
-                         ? 2 + cell_x(goal) - cell_x(start)
-                         : 2 + cell_y(goal) - cell_y(start)
-                        ).join(".");
+    let wordlen = 1 + cell_x(goal) - cell_x(start) + cell_y(goal) - cell_y(start);
+
+    let word = "", cell = start;
+    for (let i = 0; i < wordlen; i++) {
+        word += cell_isletter(cell) ? cell_value(cell) : ".";
+        cell = next_cell(cell, horiz);
+    }
     return {word: word, x: cell_x(start), y: cell_y(start), horiz: horiz};
 }
 
@@ -707,8 +710,15 @@ function set_visibility(elem, visible) {
 
 function add_filter_to_crossword() {
     let newword = selected_cword();
-    newword.word = dom.wordlist.filter.value.toUpperCase();
-    add_word_to_crossword(newword);
+    if (filter_can_be_added()) {
+        newword.word = dom.wordlist.filter.value.toUpperCase();
+        add_word_to_crossword(newword);
+    }
+}
+
+function filter_can_be_added() {
+    return dom.wordlist.filter.value.length == selected_cword().word.length &&
+        new RegExp('^' + selected_cword().word + '$').test(dom.wordlist.filter.value);
 }
 
 function show_wordlist() {
@@ -724,7 +734,7 @@ function show_wordlist() {
     console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
-    set_visibility(dom.buttons.addword, dom.wordlist.filter.value.length == selected_cword().word.length);
+    set_visibility(dom.buttons.addword, filter_can_be_added());
 
     if (the_crossword.theme.sim > 0) {
         shuffle_by_vector_similarity(filtered, the_crossword.theme.sim, the_crossword.theme.vector);
@@ -756,7 +766,7 @@ function show_wordlist() {
         btn.onclick = (() => {
             add_word_to_crossword(cw);
             deselect_crossword();
-        }).bind(the_crossword);
+        });
     }
     window.setTimeout(() => dom.wordlist.filter.focus(), 100);
 }
