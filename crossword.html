@@ -70,9 +70,11 @@
     <div>
       <span id="wordlist-intro"></span>
       <span id="wordlist-filter-wrapper">
-        <input id="wordlist-filter" type="search"/>
-        <button id="button-wordlist-reload" title="Slumpa nya ord">&#x27f2;</button>
-        <button id="button-wordlist-addword" title="Lägg till i korsordet">Lägg till</button>
+        <form action="javascript:void(0)">
+          <input id="wordlist-filter" type="search"/>
+          <button id="button-wordlist-reload" title="Slumpa nya ord">&#x27f2;</button>
+          <button type="submit" id="button-wordlist-addword" title="Lägg till i korsordet">Lägg till</button>
+        </form>
       </span>
     </div>
     <div id="wordlist-content"></div>
