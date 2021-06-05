@@ -713,6 +713,7 @@ function add_filter_to_crossword() {
     if (filter_can_be_added()) {
         newword.word = dom.wordlist.filter.value.toUpperCase();
         add_word_to_crossword(newword);
+        deselect_crossword();
     }
 }
 
