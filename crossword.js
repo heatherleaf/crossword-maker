@@ -562,27 +562,25 @@ function find_matching_words() {
         return;
     }
     start_wordlist();
-    {
-        let time = -Date.now();
-        let wordlen = regex.length;
-        regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
-        let wordlist = the_dictionary[wordlen];
-        if (wordlist) {
-            let sel = selected_cword();
-            for (let word in wordlist) {
-                if (regex.test(word)) {
-                    if (check_constraints(word, constraints)) {
-                        found++;
-                        let cword = {word:word, x:sel.x, y:sel.y, horiz:sel.horiz, value:wordlist[word]};
-                        let choice = add_to_wordlist(cword);
-                    }
+    let time = -Date.now();
+    let wordlen = regex.length;
+    regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
+    let wordlist = the_dictionary[wordlen];
+    if (wordlist) {
+        let sel = selected_cword();
+        for (let word in wordlist) {
+            if (regex.test(word)) {
+                if (check_constraints(word, constraints)) {
+                    found++;
+                    let cword = {word:word, x:sel.x, y:sel.y, horiz:sel.horiz, value:wordlist[word]};
+                    let choice = add_to_wordlist(cword);
                 }
             }
         }
-        time += Date.now();
-        console.log(`${found} matches, in ${time} ms`);
-        show_wordlist();
     }
+    time += Date.now();
+    console.log(`${found} matches, in ${time} ms`);
+    show_wordlist();
 }
 
 function selection_start() {
