@@ -9,6 +9,9 @@ const config = {
 };
 
 
+
+window.addEventListener('load', initialize);
+
 function initialize() {
     dom = {
         crossword: {
@@ -38,10 +41,11 @@ function initialize() {
         },
     };
 
-    dom.buttons.help.onclick = show_help;
+    dom.buttons.help.addEventListener('click', show_help);
     init_crossword(config.width, config.height);
-    init_dictionary();
     clear_wordlist();
+    init_dictionary();
+    console.log("Finished initialization");
 }
 
 function show_help() {
@@ -64,8 +68,8 @@ if (typeof dictionaries === "undefined")
 var the_dictionary;
 
 function init_dictionary() {
-    dom.info.dictselect.onchange = select_dictionary;
-    dom.buttons.upload.onchange = upload_dictionary;
+    dom.info.dictselect.addEventListener('change', select_dictionary);
+    dom.buttons.upload.addEventListener('change', upload_dictionary);
     for (let name in dictionaries) {
         add_dictionary(name, dictionaries[name]);
     }
@@ -177,14 +181,14 @@ function upload_dictionary() {
     if (files.length != 1) return;
     const file = files[0];
     let reader = new FileReader();
-    reader.onload = () => {
+    reader.addEventListener('load', () => {
         if (reader.result) {
             add_dictionary(file.name, reader.result);
             dom.info.dictselect.value = file.name;
             select_dictionary();
         }
-    };
-    reader.onerror = (e) => alert(e.target.error.name);
+    });
+    reader.addEventListener('error', (e) => alert(e.target.error.name));
     reader.readAsText(file);
 }
 
@@ -282,20 +286,20 @@ function init_crossword(width, height) {
     for (let y = 0; y < height; y++) {
         insert_crossword_row(y, width);
     }
-    document.onmouseup = on_mouse_up;
-    dom.buttons.reset.onclick = clear_crossword;
+    document.addEventListener('mouseup', on_mouse_up);
+    dom.buttons.reset.addEventListener('click', clear_crossword);
     for (let btn of dom.buttons.resize) {
-        btn.onclick = resize_crossword.bind(btn);
+        btn.addEventListener('click', resize_crossword.bind(btn));
     }
 }
 
 function insert_crossword_cell(x, y) {
     let row = dom.crossword.table.rows[y];
     let cell = row.insertCell(x);
-    cell.onmousedown = on_mouse_down;
-    cell.onmouseenter = on_mouse_enter;
-    cell.ondblclick = on_dbl_click;
-    cell.onclick = on_click;
+    cell.addEventListener('mousedown', on_mouse_down);
+    cell.addEventListener('mouseenter', on_mouse_enter);
+    cell.addEventListener('dblclick', on_dbl_click);
+    cell.addEventListener('click', on_click);
 }
 
 function insert_crossword_row(y, width=null) {
@@ -694,9 +698,9 @@ function clear_wordlist() {
 }
 
 function start_wordlist() {
-    dom.wordlist.filter.oninput = show_wordlist;
-    dom.buttons.reload.onclick = show_wordlist;
-    dom.buttons.addword.onclick = add_filter_to_crossword;
+    dom.wordlist.filter.addEventListener('input', show_wordlist);
+    dom.buttons.reload.addEventListener('click', show_wordlist);
+    dom.buttons.addword.addEventListener('click', add_filter_to_crossword);
     set_visibility(dom.wordlist.container, true);
     if (selected_cword().word)
         dom.wordlist.filter.maxLength = selected_cword().word.length;
@@ -764,7 +768,7 @@ function show_wordlist() {
         let btn = document.createElement('button');
         dom.wordlist.content.append(btn);
         btn.innerText = cw.word;
-        btn.onclick = (() => {
+        btn.addEventListener('click', () => {
             add_word_to_crossword(cw);
             deselect_crossword();
         });
