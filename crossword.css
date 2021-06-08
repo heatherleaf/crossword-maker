@@ -141,6 +141,10 @@ select::-ms-expand {
     font-family: sans-serif;
 }
 
+#crossword-table .theme {
+    background-color: #efe;
+}
+
 #wordlist-container {
     flex: 1;
     min-width: 40%;

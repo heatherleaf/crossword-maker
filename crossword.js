@@ -244,7 +244,7 @@ function set_cell_value(cell, val) {
     cell.classList.toggle("blocked", val.length > 1);
 }
 
-function cell_clue(cell) {
+function edit_cell_clue(cell) {
     let val = cell_value(cell);
     let result = window.prompt("Skriv en ledtråd (avbryt för att ta bort ledtråden)", val);
     if (result && result.length > 1) {
@@ -273,14 +273,10 @@ var the_crossword;
 function init_crossword(width, height) {
     the_crossword = {
         cwords: [],
-        theme: {
-            words: [],
-            vector: null,
-            sim: 0,
-        },
+        theme: null,
         selection: {
             start: null,
-            cword: null,
+            cells: null,
         },
     };
     for (let y = 0; y < height; y++) {
@@ -308,18 +304,12 @@ function insert_crossword_row(y, width=null) {
     for (let x = 0; x < width; x++) {
         insert_crossword_cell(x, y);
     }
-    for (let cword of the_crossword.cwords) {
-        if (cword.y >= y) cword.y++;
-    }
 }
 
 function insert_crossword_column(x, height=null) {
     if (!height) height = crossword_height();
     for (let y = 0; y < height; y++) {
         insert_crossword_cell(x, y);
-    }
-    for (let cword of the_crossword.cwords) {
-        if (cword.x >= x) cword.x++;
     }
 }
 
@@ -335,9 +325,6 @@ function delete_crossword_row(y) {
         }
     }
     dom.crossword.table.deleteRow(y);
-    for (let cword of the_crossword.cwords) {
-        if (cword.y > y) cword.y--;
-    }
 }
 
 function delete_crossword_column(x) {
@@ -353,9 +340,6 @@ function delete_crossword_column(x) {
     }
     for (let y = 0; y < crossword_height(); y++) {
         dom.crossword.table.rows[y].deleteCell(x);
-    }
-    for (let cword of the_crossword.cwords) {
-        if (cword.x > x) cword.x--;
     }
 }
 
@@ -377,7 +361,6 @@ function resize_crossword() {
         this.classList.contains("e") ? "e" :
         this.classList.contains("w") ? "w" : null;
 
-    deselect_crossword();
     if (gs == "grow") {
         if (dir == "n" || dir == "s") {
             insert_crossword_row(dir == "n" ? 0 : crossword_height());
@@ -403,62 +386,65 @@ function all_crossword_cells() {
     return dom.crossword.table.getElementsByTagName('td');
 }
 
-function add_word_to_crossword(cword, dryrun=false) {
-    if (!dryrun) {
-        console.log(`Added "${cword.word}" at ${cword.x}:${cword.y}${cword.horiz?"\u2192":"\u2193"}`);
-        add_word_to_crossword(cword, true);
-        the_crossword.cwords.push(cword);
-        calculate_theme();
-    }
-    let cell = crossword_cell(cword.x, cword.y);
-    for (let ch of cword.word) {
+function add_word_to_crossword(word) {
+    let cells = the_crossword.selection.cells;
+    cells.forEach((cell, i) => {
+        let ch = word.charAt(i);
         if (cell && (cell_isempty(cell) || cell_value(cell) == ch)) {
-            if (!dryrun) set_cell_value(cell, ch);
-            cell = next_cell(cell, cword.horiz);
+            set_cell_value(cell, ch);
         } else {
-            throw `Failed to add "${cword.word}" at ${cword.x}:${cword.y}${cword.horiz?"\u2192":"\u2193"}`;
+            throw `Failed to add "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`;
         }
-    }
+    });
+    console.log(`Added "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+    the_crossword.cwords.push(cells);
+    redraw_crossword();
 }
 
-function delete_words_at_position(x, y) {
-    let occupied_by = (cword) => cword.horiz
-        ? y == cword.y && cword.x <= x && x < cword.x + cword.word.length
-        : x == cword.x && cword.y <= y && y < cword.y + cword.word.length;
-    the_crossword.cwords = the_crossword.cwords.filter(
-        (cword) => occupied_by(cword)
-            ? console.log(`Deleted "${cword.word}" at ${cword.x}:${cword.y}${cword.horiz?"\u2192":"\u2193"}`)
-            : true
-    );
-    redraw_crossword();
+function cells_to_word(cells) {
+    return cells.map((c) => cell_isletter(c) ? cell_value(c) : ".").join("");
 }
 
 function redraw_crossword() {
     deselect_crossword();
+    let occupied_cells = new Set();
+    for (let cword of the_crossword.cwords) {
+        for (let cell of cword) {
+            occupied_cells.add(cell);
+        }
+    }
     for (let cell of all_crossword_cells()) {
-        if (cell_isletter(cell)) {
+        if (occupied_cells.has(cell)) {
+            //
+        } else {
             clear_cell(cell);
         }
     }
-    let cwords = the_crossword.cwords;
-    the_crossword.cwords = [];
-    for (let cw of cwords) {
-        add_word_to_crossword(cw);
-    }
+    calculate_theme();
+}
+
+function delete_words_at_cell(cell) {
+    deselect_crossword();
+    let occupied_by = (cword) => cword.some((c) => c === cell);
+    let to_remove = the_crossword.cwords.filter(occupied_by);
+    if (to_remove.length == 0) return;
+    let ok = confirm("Är du säker att du vill ta bort " +
+                     (to_remove.length>1 ? "orden " : "ordet ") +
+                     to_remove.map((cw) => cells_to_word(cw)).join(" och ") + "?");
+    if (!ok) return;
+    the_crossword.cwords = the_crossword.cwords.filter((cw) => !occupied_by(cw));
+    redraw_crossword();
 }
 
 function clear_crossword() {
     let ok = confirm("Är du säker att du vill radera korsordet?");
-    if (ok) {
-        deselect_crossword();
-        the_crossword.cwords = [];
-        for (let cell of all_crossword_cells()) {
-            clear_cell(cell);
-        }
-    }
+    if (!ok) return;
+    deselect_crossword();
+    the_crossword.cwords = [];
+    redraw_crossword();
 }
 
-function cells_to_cword(start, goal) {
+function calculate_selection(start, goal) {
     let xlen = Math.abs(cell_x(goal) - cell_x(start)),
         ylen = Math.abs(cell_y(goal) - cell_y(start));
     let horiz = xlen >= ylen;
@@ -491,53 +477,48 @@ function cells_to_cword(start, goal) {
     }
     let wordlen = 1 + cell_x(goal) - cell_x(start) + cell_y(goal) - cell_y(start);
 
-    let word = "", cell = start;
+    let cell = start, cells = [];
     for (let i = 0; i < wordlen; i++) {
-        word += cell_isletter(cell) ? cell_value(cell) : ".";
+        cells.push(cell);
         cell = next_cell(cell, horiz);
     }
-    return {word: word, x: cell_x(start), y: cell_y(start), horiz: horiz};
+    return cells;
 }
 
 function draw_selection() {
     deselect_all_cells();
-    let sel = selected_cword();
-    if (!sel) return;
-    let cell = crossword_cell(sel.x, sel.y);
-    for (let i = 0; i < sel.word.length; i++) {
-        if (cell_isblocked(cell)) break;
-        select_cell(cell);
-        cell = next_cell(cell, sel.horiz);
-    }
+    let cells = the_crossword.selection.cells;
+    if (!cells) return;
+    cells.forEach(select_cell);
 }
 
 function infer_constraints() {
     let wordregex = "";
     let constraints = [];
-    let sel = selected_cword();
-    let cell = crossword_cell(sel.x, sel.y);
-    for (let _c of sel.word) {
-        let char;
-        let constr = "?";
+    let cells = the_crossword.selection.cells;
+    for (let i = 0; i < cells.length; i++) {
+        let cell = cells[i];
         if (cell_isletter(cell)) {
             wordregex += cell_value(cell);
             constraints.push("?");
         } else {
-            let orthcell = prev_cell(cell, !sel.horiz);
+            let constr = "?";
+            let horiz = cell_y(cell) == cell_y(cells[i>0 ? i-1 : i+1]);
+            let orthcell = prev_cell(cell, !horiz);
             while (orthcell && cell_isletter(orthcell)) {
                 constr = cell_value(orthcell) + constr;
-                orthcell = prev_cell(orthcell, !sel.horiz);
+                orthcell = prev_cell(orthcell, !horiz);
             }
-            orthcell = next_cell(cell, !sel.horiz);
+            orthcell = next_cell(cell, !horiz);
             while (orthcell && cell_isletter(orthcell)) {
                 constr = constr + cell_value(orthcell);
-                orthcell = next_cell(orthcell, !sel.horiz);
+                orthcell = next_cell(orthcell, !horiz);
             }
             wordregex += "?";
             constraints.push(constr);
         }
-        cell = next_cell(cell, sel.horiz);
     }
+    console.log(": " + wordregex + " / " + constraints.join(" : "));
     return [wordregex, constraints];
 }
 
@@ -553,56 +534,9 @@ function check_constraints(word, constraints) {
     return true;
 }
 
-function find_matching_words() {
-    clear_wordlist();
-    let found = 0;
-    let [regex, constraints] = infer_constraints();
-    if (regex.indexOf("?") < 0) {
-        window.setTimeout(deselect_crossword, 100);
-        return;
-    }
-    start_wordlist();
-    let time = -Date.now();
-    let wordlen = regex.length;
-    regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
-    let wordlist = the_dictionary[wordlen];
-    if (wordlist) {
-        let sel = selected_cword();
-        for (let word in wordlist) {
-            if (regex.test(word)) {
-                if (check_constraints(word, constraints)) {
-                    found++;
-                    let cword = {word:word, x:sel.x, y:sel.y, horiz:sel.horiz, value:wordlist[word]};
-                    let choice = add_to_wordlist(cword);
-                }
-            }
-        }
-    }
-    time += Date.now();
-    console.log(`${found} matches, in ${time} ms`);
-    show_wordlist();
-}
-
-function selection_start() {
-    return the_crossword.selection.start;
-}
-
-function set_selection_start(cell) {
-    the_crossword.selection.start = cell;
-    dom.crossword.table.classList.toggle("selecting", cell != null);
-}
-
-function selected_cword() {
-    return the_crossword.selection.cword;
-}
-
-function set_selected_cword(cword) {
-    the_crossword.selection.cword = cword;
-}
-
 function deselect_crossword() {
-    set_selection_start(null);
-    set_selected_cword(null);
+    the_crossword.selection.cells = null;
+    the_crossword.selection.start = null;
     clear_wordlist();
     deselect_all_cells();
 }
@@ -617,20 +551,20 @@ function on_dbl_click(evt) {
     deselect_crossword();
     let cell = evt.currentTarget;
     if (cell_isletter(cell)) {
-        delete_words_at_position(cell_x(cell), cell_y(cell));
+        delete_words_at_cell(cell);
     } else {
-        cell_clue(cell);
+        edit_cell_clue(cell);
     }
 }
 
 function on_mouse_up(evt) {
     evt.preventDefault();
-    if (!selection_start()) return;
-    if (selected_cword().word.length <= 1) {
+    if (!the_crossword.selection.start) return;
+    if (the_crossword.selection.cells.length <= 1) {
         deselect_crossword();
         return;
     }
-    set_selection_start(null);
+    the_crossword.selection.start = null;
     find_matching_words();
 }
 
@@ -638,16 +572,16 @@ function on_mouse_down(evt) {
     evt.preventDefault();
     clear_wordlist();
     let cell = evt.currentTarget;
-    set_selection_start(cell);
-    set_selected_cword(cells_to_cword(cell, cell));
+    the_crossword.selection.start = cell;
+    the_crossword.selection.cells = calculate_selection(cell, cell);
     draw_selection();
 }
 
 function on_mouse_enter(evt) {
     evt.preventDefault();
-    if (!selection_start()) return;
+    if (!the_crossword.selection.start) return;
     let cell = evt.currentTarget;
-    set_selected_cword(cells_to_cword(selection_start(), cell));
+    the_crossword.selection.cells = calculate_selection(the_crossword.selection.start, cell);
     draw_selection();
 }
 
@@ -656,27 +590,44 @@ function on_mouse_enter(evt) {
 // Theme
 
 function calculate_theme() {
-    let cwords = the_crossword.cwords.filter((w) => is_wordvector(w.value));
+    let cwords = the_crossword.cwords.flatMap((cells) => {
+        let word = cells_to_word(cells);
+        let wordlist = the_dictionary[word.length];
+        if (!wordlist) return [];
+        let vector = wordlist[word];
+        if (!is_wordvector(vector)) return [];
+        return {value:vector, cells:cells, word:word};
+    });
+
+    the_crossword.theme = null;
+    for (let cell of all_crossword_cells()) {
+        cell.classList.remove("theme");
+    }
 
     // The number of words in the theme group is 1/2 of the words in the crossword, but at most 5:
     let groupsize = Math.min(Math.ceil(cwords.length / 2), 5);
-    if (groupsize > 1) {
-        let combinations = cwords.length <= 15 ? yield_combinations : random_combinations;
-        let similarities = [];
-        for (let comb of combinations(cwords, groupsize, 3000)) {
-            let average = average_vectors(...comb.map((w) => w.value));
-            let sim = comb.reduce((sum, w) => sum + cosine_similarity(w.value, average), 0) / comb.length;
-            similarities.push({
-                words: comb.map((w) => w.word),
-                vector: average,
-                sim: sim,
-            });
+    if (groupsize <= 1) return;
+
+    let combinations = cwords.length <= 15 ? yield_combinations : random_combinations;
+    let theme_sim = -1, theme_vec = null, theme_comb = null;
+    for (let comb of combinations(cwords, groupsize, 3000)) {
+        let average = average_vectors(...comb.map((w) => w.value));
+        let sim = comb.reduce((sum, w) => sum + cosine_similarity(w.value, average), 0) / comb.length;
+        if (sim > theme_sim) {
+            theme_sim = sim, theme_vec = average, theme_comb = comb;
         }
-        similarities.sort((a,b) => b.sim - a.sim);
-        the_crossword.theme = similarities[0];
+    }
+    if (theme_sim <= 0) return;
+
+    let theme_cells = new Set(theme_comb.flatMap((cw) => cw.cells));
+    the_crossword.theme = theme_vec;
+    console.log(`Common theme: ${theme_comb.map((cw) => cw.word).join(", ")} (sim ${theme_sim})`);
+    for (let comb of theme_comb) {
+        for (let cell of comb.cells) {
+            cell.classList.add("theme");
+        }
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Wordlist suggestions
@@ -695,33 +646,53 @@ function clear_wordlist() {
     the_wordlist = [];
 }
 
-function start_wordlist() {
+function find_matching_words() {
+    clear_wordlist();
+    let found = 0;
+    let [regex, constraints] = infer_constraints();
+    if (regex.indexOf("?") < 0) {
+        window.setTimeout(deselect_crossword, 100);
+        return;
+    }
+
     dom.wordlist.filter.addEventListener('input', show_wordlist);
     dom.buttons.reload.addEventListener('click', show_wordlist);
     dom.buttons.addword.addEventListener('click', add_filter_to_crossword);
     set_visibility(dom.wordlist.container, true);
-    if (selected_cword().word)
-        dom.wordlist.filter.maxLength = selected_cword().word.length;
+    if (the_crossword.selection.cells.length > 0)
+        dom.wordlist.filter.maxLength = the_crossword.selection.cells.length;
     else
         dom.wordlist.filter.removeAttribute('maxLength');
-}
 
-function set_visibility(elem, visible) {
-    elem.style.display = visible ? "" : "none";
+    let time = -Date.now();
+    let wordlen = regex.length;
+    regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
+    let wordlist = the_dictionary[wordlen];
+    if (wordlist) {
+        for (let word in wordlist) {
+            if (regex.test(word)) {
+                if (check_constraints(word, constraints)) {
+                    found++;
+                    the_wordlist.push({word:word, value:wordlist[word]});
+                }
+            }
+        }
+    }
+    time += Date.now();
+    console.log(`${found} matches, in ${time} ms`);
+    show_wordlist();
 }
 
 function add_filter_to_crossword() {
-    let newword = selected_cword();
     if (filter_can_be_added()) {
-        newword.word = dom.wordlist.filter.value.toUpperCase();
-        add_word_to_crossword(newword);
-        deselect_crossword();
+        let word = dom.wordlist.filter.value.toUpperCase();
+        add_word_to_crossword(word);
     }
 }
 
 function filter_can_be_added() {
-    return dom.wordlist.filter.value.length == selected_cword().word.length &&
-        new RegExp('^' + selected_cword().word + '$').test(dom.wordlist.filter.value);
+    return dom.wordlist.filter.value.length == the_crossword.selection.cells.length &&
+        new RegExp('^' + cells_to_word(the_crossword.selection.cells) + '$').test(dom.wordlist.filter.value);
 }
 
 function show_wordlist() {
@@ -739,8 +710,8 @@ function show_wordlist() {
     set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
     set_visibility(dom.buttons.addword, filter_can_be_added());
 
-    if (the_crossword.theme.sim > 0) {
-        shuffle_by_vector_similarity(filtered, the_crossword.theme.sim, the_crossword.theme.vector);
+    if (the_crossword.theme) {
+        shuffle_by_vector_similarity(filtered, the_crossword.theme);
     } else {
         shuffle(filtered);
     }
@@ -761,22 +732,25 @@ function show_wordlist() {
         set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
         dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     }
-    // filtered.sort((a,b) => a.word.localeCompare(b.word));
     for (let cw of filtered) {
         let btn = document.createElement('button');
         dom.wordlist.content.append(btn);
         btn.innerText = cw.word;
         btn.addEventListener('click', () => {
-            add_word_to_crossword(cw);
-            deselect_crossword();
+            add_word_to_crossword(cw.word);
         });
     }
     window.setTimeout(() => dom.wordlist.filter.focus(), 100);
 }
 
-function add_to_wordlist(word) {
-    the_wordlist.push(word);
+
+////////////////////////////////////////////////////////////////////////////////
+// Generic utilities
+
+function set_visibility(elem, visible) {
+    elem.style.display = visible ? "" : "none";
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Utilities for selecting and shuffling
@@ -790,20 +764,20 @@ function shuffle(arr) {
     }
 }
 
-function shuffle_by_vector_similarity(words, defaultsim, simvector) {
+function shuffle_by_vector_similarity(words, simvector) {
     for (let w of words) {
-        let sim = defaultsim;
+        let sim = 0;
         if (is_wordvector(w.value)) {
             sim = cosine_similarity(w.value, simvector);
         }
+        // Different possible alternatives for converting similarity to rank:
         // w.rank = -sim;
-        w.rank = Math.random() ** sim;
-        // w.rank = 1 - sim + Math.random() / 10;
+        w.rank = Math.random() ** (1 + sim);
         // w.rank = Math.random() * (1 - sim);
-        // w.rank = -(Math.random() ** (1.0 / sim));
         w.sim = sim;
     }
     words.sort((w,v) => w.rank - v.rank);
+    console.log(words[0], words[words.length-1]);
 }
 
 // Generator yielding all possible combinations
