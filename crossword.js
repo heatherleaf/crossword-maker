@@ -93,9 +93,9 @@ function add_dictionary(name, dict) {
                 if (!isword.test(word)) {
                     not_added++;
                     // console.warn(`Not a word: "${line[0]}" -- not adding`);
-                } else if (line.length == 1) {
+                } else if (line.length === 1) {
                     add_to_dict(word);
-                } else if (line.length == 2) {
+                } else if (line.length === 2) {
                     let vector = parse_base64_bitvector(line[1]);
                     if (!vector) {
                         not_added++;
@@ -128,7 +128,7 @@ function add_dictionary(name, dict) {
                 let len = Number(key);
                 for (let word in dict[key]) {
                     if (isword.test(word)) {
-                        if (word.length != len) {
+                        if (word.length !== len) {
                             console.warn(`Not of given length ${len}: "${word}" -- adding anyway`);
                         }
                         add_to_dict(word, dict[key][word]);
@@ -165,7 +165,7 @@ function lookup_dictionary(len) {
 
 function upload_dictionary() {
     let files = dom.buttons.upload.files;
-    if (files.length != 1) return;
+    if (files.length !== 1) return;
     const file = files[0];
     let reader = new FileReader();
     reader.addEventListener('load', () => {
@@ -205,7 +205,7 @@ function prev_cell(cell, horiz) {
 
 function cell_isletter(cell)  {
     let val = cell_value(cell);
-    return val && val.length == 1;
+    return val && val.length === 1;
 }
 
 function cell_isblocked(cell) {
@@ -348,17 +348,17 @@ function resize_crossword() {
         this.classList.contains("e") ? "e" :
         this.classList.contains("w") ? "w" : null;
 
-    if (gs == "grow") {
-        if (dir == "n" || dir == "s") {
-            insert_crossword_row(dir == "n" ? 0 : crossword_height());
-        } else if (dir == "e" || dir == "w") {
-            insert_crossword_column(dir == "w" ? 0 : crossword_width());
+    if (gs === "grow") {
+        if (dir === "n" || dir === "s") {
+            insert_crossword_row(dir === "n" ? 0 : crossword_height());
+        } else if (dir === "e" || dir === "w") {
+            insert_crossword_column(dir === "w" ? 0 : crossword_width());
         }                
-    } else if (gs == "shrink") {
-        if (dir == "n" || dir == "s") {
-            delete_crossword_row(dir == "n" ? 0 : crossword_height()-1);
-        } else if (dir == "e" || dir == "w") {
-            delete_crossword_column(dir == "w" ? 0 : crossword_width()-1);
+    } else if (gs === "shrink") {
+        if (dir === "n" || dir === "s") {
+            delete_crossword_row(dir === "n" ? 0 : crossword_height()-1);
+        } else if (dir === "e" || dir === "w") {
+            delete_crossword_column(dir === "w" ? 0 : crossword_width()-1);
         }
     }
     redraw_crossword();
@@ -377,7 +377,7 @@ function add_word_to_crossword(word) {
     let cells = the_crossword.selection.cells;
     cells.forEach((cell, i) => {
         let ch = word.charAt(i);
-        if (cell && (cell_isempty(cell) || cell_value(cell) == ch)) {
+        if (cell && (cell_isempty(cell) || cell_value(cell) === ch)) {
             set_cell_value(cell, ch);
         } else {
             throw `Failed to add "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`;
@@ -414,7 +414,7 @@ function delete_words_at_cell(cell) {
     deselect_crossword();
     let occupied_by = (cword) => cword.some((c) => c === cell);
     let to_remove = the_crossword.cwords.filter(occupied_by);
-    if (to_remove.length == 0) return;
+    if (to_remove.length === 0) return;
     let ok = confirm("Är du säker att du vill ta bort " +
                      (to_remove.length>1 ? "orden " : "ordet ") +
                      to_remove.map((cw) => cells_to_word(cw)).join(" och ") + "?");
@@ -490,7 +490,7 @@ function infer_constraints() {
             constraints.push("?");
         } else {
             let constr = "?";
-            let horiz = cell_y(cell) == cell_y(cells[i>0 ? i-1 : i+1]);
+            let horiz = cell_y(cell) === cell_y(cells[i>0 ? i-1 : i+1]);
             let orthcell = prev_cell(cell, !horiz);
             while (orthcell && cell_isletter(orthcell)) {
                 constr = cell_value(orthcell) + constr;
@@ -678,7 +678,7 @@ function add_filter_to_crossword() {
 }
 
 function filter_can_be_added() {
-    return dom.wordlist.filter.value.length == the_crossword.selection.cells.length &&
+    return dom.wordlist.filter.value.length === the_crossword.selection.cells.length &&
         new RegExp('^' + cells_to_word(the_crossword.selection.cells) + '$').test(dom.wordlist.filter.value);
 }
 
@@ -703,7 +703,7 @@ function show_wordlist() {
         shuffle(filtered);
     }
 
-    if (the_wordlist.length == 0) {
+    if (the_wordlist.length === 0) {
         set_wordlist_heading("Inga ord passar");
         dom.wordlist.intro.innerHTML = "Vill du lägga till ett eget ord?";
     } else if (filtered.length > config.maxresults) {
@@ -712,7 +712,7 @@ function show_wordlist() {
             "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" +
             "Filtrera genom att skriva bokstäver i sökrutan:";
         filtered.length = config.maxresults;
-    } else if (filtered.length == the_wordlist.length) {
+    } else if (filtered.length === the_wordlist.length) {
         set_wordlist_heading(`Visar ${filtered.length} passande ord`);
         dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
     } else {
@@ -771,8 +771,8 @@ function shuffle_by_vector_similarity(words, simvector) {
 // Note: (15 choose 5) > 3000 and (20 choose 5) > 15000
 // so for larger crosswords we should use random sampling instead
 function* yield_combinations(arr, k) {
-    if (arr.length == k) yield arr;
-    else if (k == 0) yield [];
+    if (arr.length === k) yield arr;
+    else if (k === 0) yield [];
     else {
         for (let rest of yield_combinations(arr.slice(1), k-1)) yield [arr[0], ...rest];
         for (let rest of yield_combinations(arr.slice(1), k)) yield rest;
