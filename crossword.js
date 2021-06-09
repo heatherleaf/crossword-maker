@@ -75,28 +75,11 @@ function init_dictionaries() {
 }
 
 function add_dictionary(name, dict) {
-    the_dictionaries[name] = convert_dictionary(dict);
-    let opt = document.createElement('option');
-    opt.value = name;
-    opt.text = `${name} (${dictionary_size(name)} ord)`;
-    dom.info.dictselect.add(opt);
-    console.log(`Added dictionary: ${name}, size ${dictionary_size(name)} words`);
-}
-
-function dictionary_size(name) {
-    let size = 0;
-    for (let subdict of Object.values(the_dictionaries[name])) {
-        size += Object.keys(subdict).length;
-    }
-    return size;
-}
-
-function convert_dictionary(dict) {
-    let dictionary = {};
+    the_dictionaries[name] = {};
     function add_to_dict(word, value=true) {
         word = word.toUpperCase();
-        if (!dictionary[word.length]) dictionary[word.length] = {};
-        dictionary[word.length][word] = value;
+        if (!the_dictionaries[name][word.length]) the_dictionaries[name][word.length] = {};
+        the_dictionaries[name][word.length][word] = value;
     }
     let isword = new RegExp("^[" + config.alphabet + "]+$", "i");
     let not_added = 0;
@@ -160,10 +143,20 @@ function convert_dictionary(dict) {
             }
         }
     }
-    if (not_added > 0) console.log(`--> ${not_added} words not added to dictionary`);
     // The final dictionary is of the form
     // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
-    return dictionary;
+
+    let dictsize = 0;
+    for (let subdict of Object.values(the_dictionaries[name])) {
+        dictsize += Object.keys(subdict).length;
+    }
+
+    let opt = document.createElement('option');
+    opt.value = name;
+    opt.text = `${name} (${dictsize} ord)`;
+    dom.info.dictselect.add(opt);
+    console.log(`Added dictionary: ${name}, size ${dictsize} words` +
+                (not_added>0 ? ` (${not_added} words not added)`: ""));
 }
 
 function lookup_dictionary(len) {
@@ -179,7 +172,6 @@ function upload_dictionary() {
         if (reader.result) {
             add_dictionary(file.name, reader.result);
             dom.info.dictselect.value = file.name;
-            select_dictionary();
         }
     });
     reader.addEventListener('error', (e) => alert(e.target.error.name));
