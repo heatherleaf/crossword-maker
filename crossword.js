@@ -219,6 +219,7 @@ function cell_isempty(cell) {
 
 function clear_cell(cell) {
     set_cell_value(cell, "");
+    cell.classList.value = "";
 }
 
 function cell_value(cell) {
@@ -394,15 +395,24 @@ function cells_to_word(cells) {
 
 function redraw_crossword() {
     deselect_crossword();
-    let occupied_cells = new Set();
+    let occupied_cells = new Map();
     for (let cword of the_crossword.cwords) {
-        for (let cell of cword) {
-            occupied_cells.add(cell);
+        for (let i = 0; i < cword.length; i++) {
+            let cell = cword[i];
+            let css_class = occupied_cells.get(cell);
+            if (!css_class && 0 < i && i < cword.length - 1) {
+                if (cell_x(cword[i-1]) === cell_x(cell) && cell_x(cell) < cell_x(cword[i+1])) {
+                    css_class = 'right-turn';
+                } else if (cell_x(cword[i-1]) < cell_x(cell) && cell_x(cell) === cell_x(cword[i+1])) {
+                    css_class = 'down-turn';
+                }
+            } 
+            occupied_cells.set(cell, css_class);
         }
     }
     for (let cell of all_crossword_cells()) {
         if (occupied_cells.has(cell)) {
-            //
+            cell.classList.value = occupied_cells.get(cell);
         } else {
             clear_cell(cell);
         }
@@ -435,39 +445,58 @@ function calculate_selection(start, goal) {
     let xlen = Math.abs(cell_x(goal) - cell_x(start)),
         ylen = Math.abs(cell_y(goal) - cell_y(start));
     let horiz = xlen >= ylen;
-    goal = horiz
+    let newgoal = horiz
         ? crossword_cell(cell_x(goal), cell_y(start))
         : crossword_cell(cell_x(start), cell_y(goal));
     if (xlen || ylen) {
-        let dx = Math.sign(cell_x(goal) - cell_x(start)),
-            dy = Math.sign(cell_y(goal) - cell_y(start));
+        let dx = Math.sign(cell_x(newgoal) - cell_x(start)),
+            dy = Math.sign(cell_y(newgoal) - cell_y(start));
         let cell = start;
-        while (cell != goal) {
+        while (cell !== newgoal) {
             let next = move_to_cell(cell, dx, dy);
             if (cell_isblocked(next)) break;
             cell = next;
         }
-        goal = cell;
+        newgoal = cell;
         // extend selection
         cell = move_to_cell(start, -dx, -dy);
         while (cell && cell_isletter(cell)) {
             start = cell;
             cell = move_to_cell(cell, -dx, -dy);
         }
-        cell = move_to_cell(goal, dx, dy);
+        cell = move_to_cell(newgoal, dx, dy);
         while (cell && cell_isletter(cell)) {
-            goal = cell;
+            newgoal = cell;
             cell = move_to_cell(cell, dx, dy);
         }
         // swap start, goal if necessary
-        if (dx + dy < 0) [start, goal] = [goal, start];
+        if (dx + dy < 0) [start, newgoal] = [newgoal, start];
     }
-    let wordlen = 1 + cell_x(goal) - cell_x(start) + cell_y(goal) - cell_y(start);
 
+    let wordlen = 1 + cell_x(newgoal) - cell_x(start) + cell_y(newgoal) - cell_y(start);
     let cell = start, cells = [];
     for (let i = 0; i < wordlen; i++) {
         cells.push(cell);
         cell = next_cell(cell, horiz);
+    }
+
+    let crossing_words = the_crossword.cwords.filter((cw) => cw.some((c) => c === newgoal));
+    if (crossing_words.length > 0) {
+        if (horiz  && cell_x(newgoal) === cell_x(goal) && cell_y(newgoal) < cell_y(goal) ||
+            !horiz && cell_y(newgoal) === cell_y(goal) && cell_x(newgoal) < cell_x(goal) ||
+            horiz  && newgoal.classList.contains('down-turn') ||
+            !horiz && newgoal.classList.contains('right-turn'))
+        {
+            for (let cw of crossing_words) {
+                let i = 1 + cw.indexOf(newgoal);
+                if (0 < i && i < cw.length && next_cell(newgoal, !horiz) === cw[i]) {
+                    while (i < cw.length) {
+                        cells.push(cw[i++]);
+                    }
+                    break;
+                }
+            }
+        }
     }
     return cells;
 }

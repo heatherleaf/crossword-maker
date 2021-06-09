@@ -129,6 +129,23 @@ select::-ms-expand {
     font-family: monospace;
     vertical-align: middle;
     text-align: center;
+    position: relative;
+}
+
+#crossword-table td.right-turn::after {
+    content: "\21B3";
+    position: absolute;
+    font-size: 16px;
+    left: 2px;
+    bottom: 0;
+}
+
+#crossword-table td.down-turn::after {
+    content: "\21B4";
+    position: absolute;
+    font-size: 16px;
+    right: 0;
+    top: 0;
 }
 
 #crossword-table td.selected {
