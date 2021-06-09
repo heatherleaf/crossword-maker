@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Svenska: Nyheter från 1800-talet"] = `
+if (typeof D === "undefined") var D = {};
+D["Svenska: Nyheter från 1800-talet"] = `
 OCH gAj8lhYJY0mK45bG
 I wolWVRkdSw+5I2cA
 AF kCaHaUojsVq3l9WN

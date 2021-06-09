@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Svenska: Nyheter + Wikipedia"] = `
+if (typeof D === "undefined") var D = {};
+D["Svenska: Nyheter + Wikipedia"] = `
 I 3e+bbs0u4eRYddMH
 ÄR vPcmkTyA1dRgZ62c
 OCH nDCRfZdZlXe1LsQo

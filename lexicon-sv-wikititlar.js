@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Svenska: Wikipedia-titlar"] = `
+if (typeof D === "undefined") var D = {};
+D["Svenska: Wikipedia-titlar"] = `
 I 2yAtWXRjJ0uBod7f
 ÄR LwE0xtCOxCQFoBo5
 DEN rSGm5w+oM0+SiQ0q

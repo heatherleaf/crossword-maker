@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Svenska: Twitter"] = `
+if (typeof D === "undefined") var D = {};
+D["Svenska: Twitter"] = `
 RT 8srAUdSuj0GuFKYM
 I +247pc24+qx2havT
 ATT Xbw2oTHV78GmaZ/S

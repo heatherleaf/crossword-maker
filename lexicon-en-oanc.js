@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Engelska: OANC-korpusen"] = `
+if (typeof D === "undefined") var D = {};
+D["Engelska: OANC-korpusen"] = `
 THE 8vWN4oGLuntDxxrA
 OF Y1vs8Qk3C//WXSKe
 AND d9t1NUsky9jIMB5n

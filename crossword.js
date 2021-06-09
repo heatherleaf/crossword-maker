@@ -10,7 +10,7 @@ const config = {
 
 
 
-window.addEventListener('load', initialize);
+window.addEventListener('DOMContentLoaded', initialize);
 
 function initialize() {
     dom = {
@@ -43,8 +43,7 @@ function initialize() {
 
     dom.buttons.help.addEventListener('click', show_help);
     init_crossword(config.width, config.height);
-    clear_wordlist();
-    init_dictionary();
+    window.setTimeout(init_dictionaries, 100);
     console.log("Finished initialization");
 }
 
@@ -60,25 +59,23 @@ Dubbelklicka på en tom ruta för att skriva in en ledtråd.
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Dictionary
+// Dictionaries
 
-if (typeof dictionaries === "undefined")
-    var dictionaries = {};
+if (typeof D === "undefined") var D = {};
 
-var the_dictionary;
+var the_dictionaries = {};
 
-function init_dictionary() {
-    dom.info.dictselect.addEventListener('change', select_dictionary);
+function init_dictionaries() {
+    dom.info.dictselect.addEventListener('change', deselect_crossword);
     dom.buttons.upload.addEventListener('change', upload_dictionary);
-    for (let name in dictionaries) {
-        add_dictionary(name, dictionaries[name]);
+    for (let name in D) {
+        add_dictionary(name, D[name]);
     }
-    dom.info.dictselect.selectedIndex = 0;
-    select_dictionary();
+    console.log("Finished loading dictionaries");
 }
 
 function add_dictionary(name, dict) {
-    dictionaries[name] = convert_dictionary(dict);
+    the_dictionaries[name] = convert_dictionary(dict);
     let opt = document.createElement('option');
     opt.value = name;
     opt.text = `${name} (${dictionary_size(name)} ord)`;
@@ -88,7 +85,7 @@ function add_dictionary(name, dict) {
 
 function dictionary_size(name) {
     let size = 0;
-    for (let subdict of Object.values(dictionaries[name])) {
+    for (let subdict of Object.values(the_dictionaries[name])) {
         size += Object.keys(subdict).length;
     }
     return size;
@@ -169,11 +166,8 @@ function convert_dictionary(dict) {
     return dictionary;
 }
 
-function select_dictionary() {
-    deselect_crossword();
-    let name = dom.info.dictselect.value;
-    the_dictionary = dictionaries[name];
-    console.log(`Selected dictionary: ${name}`);
+function lookup_dictionary(len) {
+    return the_dictionaries[dom.info.dictselect.value][len];
 }
 
 function upload_dictionary() {
@@ -287,6 +281,7 @@ function init_crossword(width, height) {
     for (let btn of dom.buttons.resize) {
         btn.addEventListener('click', resize_crossword.bind(btn));
     }
+    deselect_crossword();
 }
 
 function insert_crossword_cell(x, y) {
@@ -526,7 +521,7 @@ function check_constraints(word, constraints) {
     for (let i = 0; i < word.length; i++) {
         let len = constraints[i].length;
         if (len > 1) {
-            let wordlist = the_dictionary[len];
+            let wordlist = lookup_dictionary(len);
             if (!(wordlist && constraints[i].replace("?", word[i]) in wordlist))
                 return false;
         }
@@ -592,7 +587,7 @@ function on_mouse_enter(evt) {
 function calculate_theme() {
     let cwords = the_crossword.cwords.flatMap((cells) => {
         let word = cells_to_word(cells);
-        let wordlist = the_dictionary[word.length];
+        let wordlist = lookup_dictionary(word.length);
         if (!wordlist) return [];
         let vector = wordlist[word];
         if (!is_wordvector(vector)) return [];
@@ -667,7 +662,7 @@ function find_matching_words() {
     let time = -Date.now();
     let wordlen = regex.length;
     regex = new RegExp("^" + regex.replaceAll("?", "[" + config.alphabet + "]") + "$");
-    let wordlist = the_dictionary[wordlen];
+    let wordlist = lookup_dictionary(wordlen);
     if (wordlist) {
         for (let word in wordlist) {
             if (regex.test(word)) {

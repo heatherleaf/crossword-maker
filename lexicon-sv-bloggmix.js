@@ -1,5 +1,5 @@
-if (typeof dictionaries === 'undefined') var dictionaries = {};
-dictionaries["Svenska: Bloggtexter"] = `
+if (typeof D === "undefined") var D = {};
+D["Svenska: Bloggtexter"] = `
 OCH UP7x52PjC8n4FaHg
 JAG x4bQhgqPcfIWm2Rf
 DET 5uBgzVRMzoSkLxgF

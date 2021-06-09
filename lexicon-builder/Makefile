@@ -30,8 +30,8 @@ english: $(ENGLISH_LEXICA:%=lexicon-en-%.js)
 # Javascript lexicon files
 
 lexicon-%.js: lexicon-%.bin64
-	echo "if (typeof dictionaries === 'undefined') var dictionaries = {};" > $@
-	echo "dictionaries['$*'] = \`" >> $@
+	echo "if (typeof D === 'undefined') var D = {};" > $@
+	echo "D['$*'] = \`" >> $@
 	cat $< >> $@
 	echo "\`;" >> $@
 
