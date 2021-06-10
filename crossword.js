@@ -534,7 +534,7 @@ function infer_constraints() {
             constraints.push(constr);
         }
     }
-    console.log(": " + wordregex + " / " + constraints.join(" : "));
+    console.log(`Constraints: ${wordregex} / ${constraints.join(", ")}`);
     return [wordregex, constraints];
 }
 
@@ -792,8 +792,7 @@ function shuffle_by_vector_similarity(words, simvector) {
         // w.rank = Math.random() * (1 - sim);
         w.sim = sim;
     }
-    words.sort((w,v) => w.rank - v.rank);
-    console.log(words[0], words[words.length-1]);
+    words.sort((w,v) => w.rank - v.rank || w.word - v.word);
 }
 
 // Generator yielding all possible combinations
