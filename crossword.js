@@ -818,15 +818,8 @@ function shuffle(arr) {
 
 function shuffle_by_vector_similarity(words, simvector) {
     for (let w of words) {
-        let sim = 0;
-        if (is_wordvector(w.value)) {
-            sim = cosine_similarity(w.value, simvector);
-        }
-        // Different possible alternatives for converting similarity to rank:
-        // w.rank = -sim;
-        w.rank = Math.random() ** (1 + sim);
-        // w.rank = Math.random() * (1 - sim);
-        w.sim = sim;
+        w.sim = is_wordvector(w.value) ? cosine_similarity(w.value, simvector) : 0;
+        w.rank = Math.random() ** Math.max(w.sim, 0.01);
     }
     words.sort((w,v) => w.rank - v.rank || w.word - v.word);
 }
