@@ -817,28 +817,6 @@ function shuffle_by_vector_similarity(words, simvector) {
     words.sort((w,v) => w.rank - v.rank || w.word - v.word);
 }
 
-// Generator yielding all possible combinations
-// Note: (15 choose 5) > 3000 and (20 choose 5) > 15000
-// so for larger crosswords we should use random sampling instead
-function* yield_combinations(arr, k) {
-    if (arr.length === k) yield arr;
-    else if (k === 0) yield [];
-    else {
-        for (let rest of yield_combinations(arr.slice(1), k-1)) yield [arr[0], ...rest];
-        for (let rest of yield_combinations(arr.slice(1), k)) yield rest;
-    }
-}
-
-// Generator yielding `max` random combinations
-// Note 1: this shuffles the array in-place!
-// Note 2: this might yield duplicates
-function* random_combinations(arr, k, max) {
-    for (let i = 0; i < max; i++) {
-        shuffle(arr);
-        yield arr.slice(0, k);
-    }
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Word vectors
