@@ -605,45 +605,67 @@ function on_mouse_enter(evt) {
 ////////////////////////////////////////////////////////////////////////////////
 // Theme
 
+const THEME_CONSTANTS = {
+    min_avg_sim: 0,
+    min_best_sim: 0.15,
+    min_word_sim: 0.15,
+    min_sim_multiplier: 0.5,
+};
+
 function calculate_theme() {
+    // Collect all cross-words that have a wordvector
     let cwords = the_crossword.cwords.flatMap((cells) => {
         let word = cells_to_word(cells);
         let wordlist = lookup_dictionary(word.length);
         if (!wordlist) return [];
         let vector = wordlist[word];
         if (!is_wordvector(vector)) return [];
-        return {value:vector, cells:cells, word:word};
+        return {vector:vector, cells:cells, word:word};
     });
 
+    // Clear the highlighted cross-words
     the_crossword.theme = null;
     for (let cell of all_crossword_cells()) {
         cell.classList.remove("theme");
     }
 
-    // The number of words in the theme group is 1/2 of the words in the crossword, but at most 5:
-    let groupsize = Math.min(Math.ceil(cwords.length / 2), 5);
-    if (groupsize <= 1) return;
+    // We need at least 3 words to be able to infer a theme
+    if (cwords.length <= 2) return;
 
-    let combinations = cwords.length <= 15 ? yield_combinations : random_combinations;
-    let theme_sim = -1, theme_vec = null, theme_comb = null;
-    for (let comb of combinations(cwords, groupsize, 3000)) {
-        let average = average_vectors(...comb.map((w) => w.value));
-        let sim = comb.reduce((sum, w) => sum + cosine_similarity(w.value, average), 0) / comb.length;
-        if (sim > theme_sim) {
-            theme_sim = sim, theme_vec = average, theme_comb = comb;
+    // The theme is the word that is the closest to all other words
+    let theme_avg_sim = -1, theme_all_sims = null, theme_word = null;
+    for (let word of cwords) {
+        let all_sims = cwords.map((other) => cosine_similarity(word.vector, other.vector));
+        let avg_sim = all_sims.reduce((sum, sim) => sum + sim, 0) / all_sims.length;
+        if (avg_sim > theme_avg_sim) {
+            theme_avg_sim = avg_sim;
+            theme_all_sims = all_sims;
+            theme_word = word;
         }
     }
-    if (theme_sim <= 0) return;
 
-    let theme_cells = new Set(theme_comb.flatMap((cw) => cw.cells));
-    the_crossword.theme = theme_vec;
-    console.log(`Common theme: ${theme_comb.map((cw) => cw.word).join(", ")} (sim ${theme_sim})`);
-    for (let comb of theme_comb) {
-        for (let cell of comb.cells) {
+    // The best similarity is the 2nd highest (because the highest is always 1)
+    let best_sim = theme_all_sims.reduce((max, sim) => sim < 0.99 && sim > max ? sim : max, 0);
+
+    // Both the average and best similarity have to be good enough
+    if (theme_avg_sim <= THEME_CONSTANTS.min_avg_sim
+        || best_sim <= THEME_CONSTANTS.min_best_sim) return;
+    the_crossword.theme = theme_word.vector;
+
+    // Find the cross-words that are close enough to the theme word
+    let theme_group = cwords.filter(
+        (word, i) => theme_all_sims[i] >= best_sim * THEME_CONSTANTS.min_sim_multiplier
+            && theme_all_sims[i] >= THEME_CONSTANTS.min_word_sim
+    );
+    // Highlight them
+    for (let word of theme_group)
+        for (let cell of word.cells)
             cell.classList.add("theme");
-        }
-    }
+
+    console.log(`Theme: ${theme_word.word} (${theme_group.map((w) => w.word).join(", ")})` + 
+                ` (best ${best_sim.toFixed(2)} ... avg ${theme_avg_sim.toFixed(2)})`);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Wordlist suggestions
