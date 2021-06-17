@@ -9,6 +9,9 @@ const config = {
 };
 
 
+// Change this to true if you want debugging information
+const DEBUG = false;
+
 
 window.addEventListener('DOMContentLoaded', initialize);
 
@@ -628,6 +631,7 @@ function calculate_theme() {
     for (let cell of all_crossword_cells()) {
         cell.classList.remove("theme");
     }
+    if (DEBUG) document.getElementById("debug-theme").innerText = "";
 
     // We need at least 3 words to be able to infer a theme
     if (cwords.length <= 2) return;
@@ -662,8 +666,14 @@ function calculate_theme() {
         for (let cell of word.cells)
             cell.classList.add("theme");
 
-    console.log(`Theme: ${theme_word.word} (${theme_group.map((w) => w.word).join(", ")})` + 
-                ` (best ${best_sim.toFixed(2)} ... avg ${theme_avg_sim.toFixed(2)})`);
+    if (DEBUG) {
+        let debuginfo = `Theme: ${theme_word.word} (avg sim ${theme_avg_sim.toFixed(2)})` +
+            " — group: " + theme_group.map(
+                (w,i) => `${w.word} (${cosine_similarity(theme_word.vector, w.vector).toFixed(2)})`
+            ).join(", ");
+        console.log(debuginfo);
+        document.getElementById("debug-theme").innerText = debuginfo;
+    }
 }
 
 
@@ -773,7 +783,11 @@ function show_wordlist() {
     for (let cw of filtered) {
         let btn = document.createElement('button');
         dom.wordlist.content.append(btn);
-        btn.innerText = cw.word;
+        btn.innerHTML = cw.word;
+        if (DEBUG) {
+            let debuginfo = cw.sim ? `<span class="debug">${cw.sim.toFixed(2)}</span>` : "";
+            btn.innerHTML += debuginfo;
+        }
         btn.addEventListener('click', () => {
             add_word_to_crossword(cw.word);
         });

@@ -171,6 +171,14 @@ select::-ms-expand {
     text-transform: uppercase;
 }
 
+
+.debug {
+    font-family: serif;
+    font-size: 12px;
+    color: red;
+    padding: 2px;
+}
+
 /* "Fork me on GitHub", taken from: https://github.com/tholman/github-corners */
 .github-corner svg {
     fill: grey; color: white;
