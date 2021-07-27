@@ -416,7 +416,7 @@ function redraw_crossword() {
     for (let cell of all_crossword_cells()) {
         if (occupied_cells.has(cell)) {
             cell.classList.value = occupied_cells.get(cell);
-        } else {
+        } else if (!cell_isblocked(cell)) {
             clear_cell(cell);
         }
     }
@@ -441,6 +441,7 @@ function clear_crossword() {
     if (!ok) return;
     deselect_crossword();
     the_crossword.cwords = [];
+    for (let cell of all_crossword_cells()) clear_cell(cell);
     redraw_crossword();
 }
 
