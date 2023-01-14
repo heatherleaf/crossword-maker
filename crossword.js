@@ -416,6 +416,7 @@ function redraw_crossword() {
     for (let cell of all_crossword_cells()) {
         if (occupied_cells.has(cell)) {
             cell.classList.value = occupied_cells.get(cell);
+            cell.classList.add("letter");
         } else if (!cell_isblocked(cell)) {
             clear_cell(cell);
         }
