@@ -195,7 +195,11 @@ function populate_dictionaries() {
 }
 
 function lookup_dictionary(len) {
-    return the_dictionaries[dom.info.dictselect.value][len];
+    try {
+        return the_dictionaries[dom.info.dictselect.value][len];
+    } catch(e) {
+        return null;
+    }
 }
 
 function upload_dictionary() {
@@ -451,7 +455,7 @@ function redraw_crossword() {
     }
     for (let cell of all_crossword_cells()) {
         if (occupied_cells.has(cell)) {
-            cell.classList.value = occupied_cells.get(cell) // || "";
+            cell.classList.value = occupied_cells.get(cell) || "";
         } else if (!cell_isblocked(cell)) {
             clear_cell(cell);
         }
