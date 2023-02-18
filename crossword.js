@@ -45,8 +45,8 @@ function initialize() {
     };
 
     dom.buttons.help.addEventListener('click', show_help);
-    init_crossword(config.width, config.height);
-    window.setTimeout(init_dictionaries, 100);
+    init_dictionaries();
+    load_crossword() || init_crossword(config.width, config.height);
     console.log("Finished initialization");
 }
 
@@ -242,6 +242,7 @@ function edit_cell_clue(cell) {
     } else {
         clear_cell(cell);
     }
+    save_crossword();
 }
 
 function select_cell(cell) {
@@ -269,6 +270,9 @@ function init_crossword(width, height) {
             cells: null,
         },
     };
+
+    dom.crossword.table.innerHTML = null;
+
     for (let y = 0; y < height; y++) {
         insert_crossword_row(y, width);
     }
@@ -390,6 +394,7 @@ function add_word_to_crossword(word) {
     console.log(`Added "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
     the_crossword.cwords.push(cells);
     redraw_crossword();
+    save_crossword();
 }
 
 function cells_to_word(cells) {
@@ -444,6 +449,7 @@ function clear_crossword() {
     the_crossword.cwords = [];
     for (let cell of all_crossword_cells()) clear_cell(cell);
     redraw_crossword();
+    save_crossword();
 }
 
 function calculate_selection(start, goal) {
@@ -606,6 +612,53 @@ function on_mouse_enter(evt) {
     draw_selection();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Import/export
+
+function export_crossword() {
+    return {
+        width: crossword_width(),
+        height: crossword_height(),
+        cwords: the_crossword.cwords
+            .map(cells => cells.map(cell => ({
+                x: cell_x(cell),
+                y: cell_y(cell)
+            }))),
+        cells: Array.from(all_crossword_cells()).map(export_cell)
+    };
+}
+
+function export_cell(cell) {
+    return cell.innerText;
+}
+
+function import_crossword(raw_crossword) {
+    init_crossword(raw_crossword.width, raw_crossword.height);
+
+    Array.from(all_crossword_cells())
+        .forEach(function (cell, idx) { import_cell(cell, raw_crossword.cells[idx]) });
+    the_crossword.cwords = raw_crossword.cwords
+        .map(word_coords => word_coords.map(coord => crossword_cell(coord.x, coord.y)));
+
+    redraw_crossword();
+}
+
+function import_cell(cell, raw_cell) {
+    set_cell_value(cell, raw_cell);
+}
+
+function save_crossword() {
+    window.localStorage.crossword = JSON.stringify(export_crossword());
+}
+
+function load_crossword() {
+    try {
+        import_crossword(JSON.parse(window.localStorage.crossword));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Theme
