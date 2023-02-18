@@ -29,17 +29,22 @@ div {
 
 #heading-container {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    align-items: top;
     border-bottom: 1px solid black;
     padding: 20px 0;
     margin-bottom: 20px;
 }
 
-#heading-container > * {
+#menu-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#menu-container > * {
     margin: 0;
     padding: 0;
-    padding-left: 30px;
+    padding-left: 20px;
 }
 
 #button-upload-dictionary {
@@ -58,6 +63,15 @@ select, button, label {
     -moz-appearance: none;
     -webkit-appearance: none;
     appearance: none;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]:checked + label {
+    background-color: black;
+    color: white;
 }
 
 select:hover, button:hover, label:hover, #crossword-table td:hover {
