@@ -1,5 +1,4 @@
-if (typeof D === "undefined") var D = {};
-D["Svenska: Bloggtexter"] = `
+add_dictionary("Svenska: Bloggtexter", `
 OCH UP7x52PjC8n4FaHg
 JAG x4bQhgqPcfIWm2Rf
 DET 5uBgzVRMzoSkLxgF
@@ -30000,4 +29999,4 @@ KONVENT cQR/41tb/aifpqfW
 FRANCO SwME8v4fotk3sk8s
 FEMTEDEL tt+Pinv9uKI3jpiA
 OAVSÄTT UAWS4DkMtgEM4uB0
-`;
+`);

@@ -45,15 +45,19 @@ function initialize() {
     };
 
     dom.buttons.help.addEventListener('click', show_help);
-    init_dictionaries();
+    dom.info.dictselect.addEventListener('change', select_dictionary);
+    dom.buttons.upload.addEventListener('change', upload_dictionary);
+
     load_crossword() || init_crossword(config.width, config.height);
+    populate_dictionaries();
+    select_dictionary();
     console.log("Finished initialization");
 }
 
 function show_help() {
     alert(`
 Markera en rad eller kolumn för att få förslag på ord,
-klicka sedan på ett förslag för att lägga till det.
+klicka sedan på ett förslag för att lägga till det.
 
 Dubbelklicka på en bokstav för att ta bort det ordet.
 Dubbelklicka på en tom ruta för att skriva in en ledtråd.
@@ -64,17 +68,22 @@ Dubbelklicka på en tom ruta för att skriva in en ledtråd.
 ////////////////////////////////////////////////////////////////////////////////
 // Dictionaries
 
-if (typeof D === "undefined") var D = {};
-
 var the_dictionaries = {};
 
-function init_dictionaries() {
-    dom.info.dictselect.addEventListener('change', deselect_crossword);
-    dom.buttons.upload.addEventListener('change', upload_dictionary);
-    for (let name in D) {
-        add_dictionary(name, D[name]);
+function select_dictionary() {
+    deselect_crossword();
+    let name = dom.info.dictselect.value;
+    if (name in the_dictionaries) return;
+    
+    if (typeof default_dictionaries == "undefined") return;
+    if (name in default_dictionaries) {
+        console.log(`Loading dictionary ${name} from ${default_dictionaries[name]}`);
+        var script = document.createElement('script');
+        script.setAttribute('src', default_dictionaries[name]);
+        script.setAttribute('type', 'text/javascript');
+        document.getElementsByTagName("head")[0].appendChild(script);
+        delete default_dictionaries[name];
     }
-    console.log("Finished loading dictionaries");
 }
 
 function add_dictionary(name, dict) {
@@ -148,18 +157,35 @@ function add_dictionary(name, dict) {
     }
     // The final dictionary is of the form
     // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
+    
+    console.log(`Loaded dictionary: ${name}` + (not_added>0 ? ` (${not_added} words not added)`: ""));
+    populate_dictionaries();
+    dom.info.dictselect.value = name;
+}
 
-    let dictsize = 0;
-    for (let subdict of Object.values(the_dictionaries[name])) {
-        dictsize += Object.keys(subdict).length;
+function populate_dictionaries() {
+    if (typeof dom == "undefined") return;
+    dom.info.dictselect.innerHTML = "";
+    for (let name in the_dictionaries) {
+        let dictsize = 0;
+        for (let subdict of Object.values(the_dictionaries[name])) {
+            dictsize += Object.keys(subdict).length;
+        }
+        let opt = document.createElement('option');
+        opt.text = `${name} (${dictsize} ord)`;
+        opt.value = name;
+        dom.info.dictselect.add(opt);
     }
-
-    let opt = document.createElement('option');
-    opt.value = name;
-    opt.text = `${name} (${dictsize} ord)`;
-    dom.info.dictselect.add(opt);
-    console.log(`Added dictionary: ${name}, size ${dictsize} words` +
-                (not_added>0 ? ` (${not_added} words not added)`: ""));
+    
+    if (typeof default_dictionaries == "undefined") return;
+    for (let name in default_dictionaries) {
+        if (name in the_dictionaries) continue;
+        let opt = document.createElement('option');
+        opt.text = `[Inte inläst] ${name}`;
+        opt.value = name;
+        opt.addEventListener
+        dom.info.dictselect.add(opt);
+    }
 }
 
 function lookup_dictionary(len) {
@@ -174,7 +200,6 @@ function upload_dictionary() {
     reader.addEventListener('load', () => {
         if (reader.result) {
             add_dictionary(file.name, reader.result);
-            dom.info.dictselect.value = file.name;
         }
     });
     reader.addEventListener('error', (e) => alert(e.target.error.name));

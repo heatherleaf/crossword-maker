@@ -1,5 +1,4 @@
-if (typeof D === "undefined") var D = {};
-D["Engelska: OANC-korpusen"] = `
+add_dictionary("Engelska: OANC-korpusen", `
 THE 8vWN4oGLuntDxxrA
 OF Y1vs8Qk3C//WXSKe
 AND d9t1NUsky9jIMB5n
@@ -30000,4 +29999,4 @@ HANGINGS U1PU4KzUgKHJiFoO
 SAO 5Zy/1RP8q1Lr/5O4
 OVERTURES Ew6JtDtrmDDwFK1I
 REASSESS 4SMsxypptWCIRBoP
-`;
+`);

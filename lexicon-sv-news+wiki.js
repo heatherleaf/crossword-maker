@@ -1,5 +1,4 @@
-if (typeof D === "undefined") var D = {};
-D["Svenska: Nyheter + Wikipedia"] = `
+add_dictionary("Svenska: Nyheter + Wikipedia", `
 I 3e+bbs0u4eRYddMH
 ÄR vPcmkTyA1dRgZ62c
 OCH nDCRfZdZlXe1LsQo
@@ -30000,4 +29999,4 @@ ALBANER uFwol2j/+PvYvTSt
 AVSKEDAS wG/bJdndGxQuWfX6
 FRISLÄPPANDET eW1NatSzdsHPm8HO
 CONSTRUCTION MVbyqlnMjAF+hv3c
-`;
+`);

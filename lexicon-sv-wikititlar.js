@@ -1,5 +1,4 @@
-if (typeof D === "undefined") var D = {};
-D["Svenska: Wikipedia-titlar"] = `
+add_dictionary("Svenska: Wikipedia-titlar", `
 I 2yAtWXRjJ0uBod7f
 ÄR LwE0xtCOxCQFoBo5
 DEN rSGm5w+oM0+SiQ0q
@@ -30000,4 +29999,4 @@ TRANSCENDENS SPuzWM2Sjqz3KMU+
 TORNERSPEL JJfJhRjfZJYYgHCu
 STRÖMBRON CMjDDzuffjSXyUb9
 STRÅKINSTRUMENT frhkWlh0SQYeNZ1y
-`;
+`);

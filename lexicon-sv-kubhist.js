@@ -1,5 +1,4 @@
-if (typeof D === "undefined") var D = {};
-D["Svenska: Nyheter från 1800-talet"] = `
+add_dictionary("Svenska: Nyheter från 1800-talet", `
 OCH gAj8lhYJY0mK45bG
 I wolWVRkdSw+5I2cA
 AF kCaHaUojsVq3l9WN
@@ -30000,4 +29999,4 @@ KROPPSSTORLEK HteiHC8ETTGTJlqx
 ÖVER 0NBn0wHhMq+eztva
 ÅGRENS Avw+f7U+Io9WesLG
 MOTSTÅNDSKRAFT InPdZLBuHcVwhhAB
-`;
+`);
