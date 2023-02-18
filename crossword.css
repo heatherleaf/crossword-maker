@@ -145,6 +145,7 @@ select::-ms-expand {
 }
 
 #crossword-table {
+    background-color: #ccc;
     cursor: cell;
     user-select: none;
     -moz-user-select: none;
@@ -167,18 +168,25 @@ select::-ms-expand {
     position: relative;
 }
 
-#crossword-table td.right-turn::after {
-    content: "\21B3";
+#crossword-table td:not(:empty) {
+    background-color: white;
+}
+
+#crossword-table td.right-turn::after,
+#crossword-table td.down-turn::after {
+    color: black;
     position: absolute;
     font-size: 16px;
+}
+
+#crossword-table td.right-turn::after {
+    content: "\21B3";
     left: 2px;
     bottom: 0;
 }
 
 #crossword-table td.down-turn::after {
     content: "\21B4";
-    position: absolute;
-    font-size: 16px;
     right: 0;
     top: 0;
 }
@@ -188,13 +196,30 @@ select::-ms-expand {
 }
 
 #crossword-table td.blocked {
-    background-color: #ddd;
+    color: white;
+    background-color: black;
     font-size: 8px;
     font-family: sans-serif;
 }
 
-#crossword-table .theme {
+#crossword-table td.theme {
     background-color: #efe;
+}
+
+#crossword-container.hide-solution {
+    pointer-events: none;
+}
+
+#crossword-container.hide-solution #crossword-table td {
+    color: transparent;
+}
+
+#crossword-container.hide-solution #crossword-table td.blocked {
+    color: white;
+}
+
+#crossword-container.hide-solution #crossword-table td.theme {
+    background-color: white;
 }
 
 #wordlist-container {

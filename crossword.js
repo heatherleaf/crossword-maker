@@ -22,9 +22,8 @@ function initialize() {
             table:     document.getElementById("crossword-table"),
         },
         info: {
-            dictselect:document.getElementById("info-dictselect"),
-            dictname:  document.getElementById("info-dictname"),
-            dictsize:  document.getElementById("info-dictsize"),
+            dictselect:   document.getElementById("info-dictselect"),
+            hidesolution: document.getElementById("hide-solution"),
         },
         wordlist: {
             container: document.getElementById("wordlist-container"),
@@ -46,6 +45,7 @@ function initialize() {
 
     dom.buttons.help.addEventListener('click', show_help);
     dom.info.dictselect.addEventListener('change', select_dictionary);
+    dom.info.hidesolution.addEventListener('change', show_hide_solution);
     dom.buttons.upload.addEventListener('change', upload_dictionary);
 
     load_crossword() || init_crossword(config.width, config.height);
@@ -62,6 +62,12 @@ klicka sedan på ett förslag för att lägga till det.
 Dubbelklicka på en bokstav för att ta bort det ordet.
 Dubbelklicka på en tom ruta för att skriva in en ledtråd.
 `);
+}
+
+function show_hide_solution() {
+    deselect_crossword();
+    let hidden = dom.info.hidesolution.checked;
+    dom.crossword.container.classList.toggle("hide-solution", hidden);
 }
 
 
@@ -445,8 +451,7 @@ function redraw_crossword() {
     }
     for (let cell of all_crossword_cells()) {
         if (occupied_cells.has(cell)) {
-            cell.classList.value = occupied_cells.get(cell);
-            cell.classList.add("letter");
+            cell.classList.value = occupied_cells.get(cell) // || "";
         } else if (!cell_isblocked(cell)) {
             clear_cell(cell);
         }
