@@ -1,0 +1,24 @@
+.github-corner {
+    display: none;
+}
+
+#heading-container {
+    display: none;
+}
+
+button {
+    display: none;
+}
+
+td {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+#crossword-wrapper td.letter {
+    color: transparent;
+}
+
+#crossword-wrapper td.letter::after {
+    color: black;
+}
