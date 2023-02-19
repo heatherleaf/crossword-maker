@@ -1,6 +1,13 @@
 
+:root {
+    --mainfont: "Helvetica Neue", "Lucida Sans Unicode", Helvetica, Arial, sans-serif;
+    --monofont: "Courier", monospace;
+    --margin: 32px;
+    --spacing: 16px;
+}
+
 body, button, input, select, option {
-    font-family: "Helvetica Neue", "Lucida Sans Unicode", Helvetica, Arial, sans-serif;
+    font-family: var(--mainfont);
     font-size: 16px;
 }
 
@@ -31,8 +38,8 @@ div {
     display: flex;
     align-items: top;
     border-bottom: 1px solid black;
-    padding: 20px 0;
-    margin-bottom: 20px;
+    padding: var(--spacing) 0;
+    margin-bottom: var(--spacing);
 }
 
 #menu-container {
@@ -44,7 +51,7 @@ div {
 #menu-container > * {
     margin: 0;
     padding: 0;
-    padding-left: 20px;
+    padding-left: var(--spacing);
 }
 
 #button-upload-dictionary {
@@ -85,11 +92,7 @@ input[type="checkbox"]:checked + label {
         display: none;
     }
 
-    #heading-container {
-        display: none;
-    }
-
-    button {
+    #heading-container, button {
         display: none;
     }
 
@@ -109,7 +112,7 @@ input[type="checkbox"]:checked + label {
 
 #wordlist-content button {
     padding: 1px 6px;
-    font-family: monospace;
+    font-family: var(--monofont);
     font-size: 20px;
 }
 
@@ -132,10 +135,14 @@ select::-ms-expand {
     flex-wrap: wrap;
 }
 
+#wordlist-container {
+    margin-left: var(--margin);
+}
+
 #crossword-container {
+    text-align: center;
     flex-grow: 0;
     flex-shrink: 0;
-    margin-right: 20px;
 }
 
 #crossword-title:empty::after {
@@ -147,6 +154,11 @@ select::-ms-expand {
     border-style: none;
     vertical-align: middle;
     text-align: center;
+}
+
+.resize-wrapper {
+    width: var(--margin);
+    height: var(--margin);
 }
 
 #crossword-table {
@@ -167,7 +179,7 @@ select::-ms-expand {
     width: 1.5em;
     height: 1.5em;
     font-size: 24px;
-    font-family: monospace;
+    font-family: var(--monofont);
     vertical-align: middle;
     text-align: center;
     position: relative;
@@ -196,7 +208,7 @@ select::-ms-expand {
     top: 0;
 }
 
-#crossword-table td.selected {
+#crossword-table td.selected, #crossword-table td.theme.selected {
     background-color: yellow;
 }
 
@@ -204,7 +216,7 @@ select::-ms-expand {
     color: white;
     background-color: black;
     font-size: 8px;
-    font-family: sans-serif;
+    font-family: var(--mainfont);
 }
 
 #crossword-table td.theme {
@@ -229,7 +241,7 @@ select::-ms-expand {
 
 #wordlist-container {
     flex: 1;
-    min-width: 40%;
+    min-width: 30%;
 }  
 
 #wordlist-filter {
