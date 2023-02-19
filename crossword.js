@@ -729,11 +729,8 @@ function calculate_theme() {
     // Collect all cross-words that have a wordvector
     let cwords = the_crossword.cwords.flatMap((cells) => {
         let word = cells_to_word(cells);
-        let wordlist = lookup_dictionary(word.length);
-        if (!wordlist) return [];
-        let vector = wordlist[word];
-        if (!is_wordvector(vector)) return [];
-        return {vector:vector, cells:cells, word:word};
+        if (!get_vector(word)) return [];
+        return {cells:cells, word:word};
     });
 
     // Clear the highlighted cross-words
@@ -749,7 +746,7 @@ function calculate_theme() {
     // The theme is the word that is the closest to all other words
     let theme_avg_sim = -1, theme_all_sims = null, theme_word = null;
     for (let word of cwords) {
-        let all_sims = cwords.map((other) => cosine_similarity(word.vector, other.vector));
+        let all_sims = cwords.map((other) => word_similarity(word.word, other.word));
         let avg_sim = all_sims.reduce((sum, sim) => sum + sim, 0) / all_sims.length;
         if (avg_sim > theme_avg_sim) {
             theme_avg_sim = avg_sim;
@@ -764,7 +761,7 @@ function calculate_theme() {
     // Both the average and best similarity have to be good enough
     if (theme_avg_sim <= THEME_CONSTANTS.min_avg_sim
         || best_sim <= THEME_CONSTANTS.min_best_sim) return;
-    the_crossword.theme = theme_word.vector;
+    the_crossword.theme = theme_word.word;
 
     // Find the cross-words that are close enough to the theme word
     let theme_group = cwords.filter(
@@ -779,11 +776,27 @@ function calculate_theme() {
     if (DEBUG) {
         let debuginfo = `Theme: ${theme_word.word} (avg sim ${theme_avg_sim.toFixed(2)})` +
             " — group: " + theme_group.map(
-                (w,i) => `${w.word} (${cosine_similarity(theme_word.vector, w.vector).toFixed(2)})`
+                (w,i) => `${w.word} (${word_similarity(theme_word.word, w.word).toFixed(2)})`
             ).join(", ");
         console.log(debuginfo);
         document.getElementById("debug-theme").innerText = debuginfo;
     }
+}
+
+function get_vector(word) {
+    let wordlist = lookup_dictionary(word.length);
+    if (!wordlist) return;
+    let vector = wordlist[word];
+    if (!is_wordvector(vector)) return;
+    return vector;
+}
+
+function word_similarity(word1, word2) {
+    let vec1 = get_vector(word1);
+    if (!vec1) return 0;
+    let vec2 = get_vector(word2);
+    if (!vec2) return 0;
+    return cosine_similarity(vec1, vec2);
 }
 
 
@@ -831,7 +844,7 @@ function find_matching_words() {
             if (regex.test(word)) {
                 if (check_constraints(word, constraints)) {
                     found++;
-                    the_wordlist.push({word:word, value:wordlist[word]});
+                    the_wordlist.push({word:word});
                 }
             }
         }
@@ -926,12 +939,12 @@ function shuffle(arr) {
     }
 }
 
-function shuffle_by_vector_similarity(words, simvector) {
+function shuffle_by_vector_similarity(words, theme) {
     for (let w of words) {
-        w.sim = is_wordvector(w.value) ? cosine_similarity(w.value, simvector) : 0;
+        w.sim = word_similarity(w.word, theme);
         w.rank = Math.random() ** Math.max(w.sim, 0.01);
     }
-    words.sort((w,v) => w.rank - v.rank || w.word - v.word);
+    words.sort((w,v) => w.rank - v.rank);
 }
 
 
