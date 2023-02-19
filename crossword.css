@@ -150,6 +150,15 @@ select::-ms-expand {
     color: grey;
 }
 
+#crossword-wrapper #crossword-theme {
+    text-align: left;
+    color: green;
+}
+
+#crossword-theme:not(:empty)::before {
+    content: "Tema-ord: ";
+}
+
 #crossword-wrapper td {
     border-style: none;
     vertical-align: middle;
@@ -208,7 +217,7 @@ select::-ms-expand {
     top: 0;
 }
 
-#crossword-table td.selected, #crossword-table td.theme.selected {
+#crossword-table td.selected {
     background-color: yellow;
 }
 
@@ -220,7 +229,7 @@ select::-ms-expand {
 }
 
 #crossword-table td.theme {
-    background-color: #efe;
+    color: green;
 }
 
 #crossword-container.hide-solution {
@@ -235,8 +244,8 @@ select::-ms-expand {
     color: white;
 }
 
-#crossword-container.hide-solution #crossword-table td.theme {
-    background-color: white;
+#crossword-container.hide-solution #crossword-theme {
+    display: none;
 }
 
 #wordlist-container {

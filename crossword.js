@@ -320,7 +320,6 @@ var the_selection;
 function init_crossword(width, height) {
     the_crossword = {
         cwords: [],
-        theme: null,
     };
     the_selection = {
         start: null,
@@ -735,7 +734,7 @@ function calculate_theme() {
     });
 
     // Clear the highlighted cross-words
-    the_crossword.theme = null;
+    set_theme();
     for (let cell of all_crossword_cells()) {
         cell.classList.remove("theme");
     }
@@ -762,7 +761,7 @@ function calculate_theme() {
     // Both the average and best similarity have to be good enough
     if (theme_avg_sim <= THEME_CONSTANTS.min_avg_sim
         || best_sim <= THEME_CONSTANTS.min_best_sim) return;
-    the_crossword.theme = theme_word.word;
+    set_theme(theme_word.word);
 
     // Find the cross-words that are close enough to the theme word
     let theme_group = cwords.filter(
@@ -782,6 +781,14 @@ function calculate_theme() {
         console.log(debuginfo);
         document.getElementById("debug-theme").innerText = debuginfo;
     }
+}
+
+function set_theme(theme) {
+    dom.crossword.theme.innerText = theme || "";
+}
+
+function get_theme() {
+    return dom.crossword.theme.innerText;
 }
 
 function get_vector(word) {
@@ -882,8 +889,8 @@ function show_wordlist() {
     set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
     set_visibility(dom.buttons.addword, filter_can_be_added());
 
-    if (the_crossword.theme) {
-        shuffle_by_vector_similarity(filtered, the_crossword.theme);
+    if (get_theme()) {
+        shuffle_by_vector_similarity(filtered, get_theme());
     } else {
         shuffle(filtered);
     }
