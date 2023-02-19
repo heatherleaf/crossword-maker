@@ -315,15 +315,16 @@ function deselect_all_cells() {
 // The crossword
 
 var the_crossword;
+var the_selection;
 
 function init_crossword(width, height) {
     the_crossword = {
         cwords: [],
         theme: null,
-        selection: {
-            start: null,
-            cells: null,
-        },
+    };
+    the_selection = {
+        start: null,
+        cells: null,
     };
 
     dom.crossword.table.innerHTML = null;
@@ -437,7 +438,7 @@ function all_crossword_cells() {
 }
 
 function add_word_to_crossword(word) {
-    let cells = the_crossword.selection.cells;
+    let cells = the_selection.cells;
     cells.forEach((cell, i) => {
         let ch = word.charAt(i);
         if (cell && (cell_isempty(cell) || cell_value(cell) === ch)) {
@@ -568,7 +569,7 @@ function calculate_selection(start, goal) {
 
 function draw_selection() {
     deselect_all_cells();
-    let cells = the_crossword.selection.cells;
+    let cells = the_selection.cells;
     if (!cells) return;
     cells.forEach(select_cell);
 }
@@ -576,7 +577,7 @@ function draw_selection() {
 function infer_constraints() {
     let wordregex = "";
     let constraints = [];
-    let cells = the_crossword.selection.cells;
+    let cells = the_selection.cells;
     for (let i = 0; i < cells.length; i++) {
         let cell = cells[i];
         if (cell_isletter(cell)) {
@@ -616,8 +617,8 @@ function check_constraints(word, constraints) {
 }
 
 function deselect_crossword() {
-    the_crossword.selection.cells = null;
-    the_crossword.selection.start = null;
+    the_selection.cells = null;
+    the_selection.start = null;
     clear_wordlist();
     deselect_all_cells();
 }
@@ -640,12 +641,12 @@ function on_dbl_click(evt) {
 
 function on_mouse_up(evt) {
     evt.preventDefault();
-    if (!the_crossword.selection.start) return;
-    if (the_crossword.selection.cells.length <= 1) {
+    if (!the_selection.start) return;
+    if (the_selection.cells.length <= 1) {
         deselect_crossword();
         return;
     }
-    the_crossword.selection.start = null;
+    the_selection.start = null;
     find_matching_words();
 }
 
@@ -654,16 +655,16 @@ function on_mouse_down(evt) {
     evt.preventDefault();
     clear_wordlist();
     let cell = evt.currentTarget;
-    the_crossword.selection.start = cell;
-    the_crossword.selection.cells = calculate_selection(cell, cell);
+    the_selection.start = cell;
+    the_selection.cells = calculate_selection(cell, cell);
     draw_selection();
 }
 
 function on_mouse_enter(evt) {
     evt.preventDefault();
-    if (!the_crossword.selection.start) return;
+    if (!the_selection.start) return;
     let cell = evt.currentTarget;
-    the_crossword.selection.cells = calculate_selection(the_crossword.selection.start, cell);
+    the_selection.cells = calculate_selection(the_selection.start, cell);
     draw_selection();
 }
 
@@ -830,8 +831,8 @@ function find_matching_words() {
     dom.buttons.reload.addEventListener('click', show_wordlist);
     dom.buttons.addword.addEventListener('click', add_filter_to_crossword);
     set_visibility(dom.wordlist.container, true);
-    if (the_crossword.selection.cells.length > 0)
-        dom.wordlist.filter.maxLength = the_crossword.selection.cells.length;
+    if (the_selection.cells.length > 0)
+        dom.wordlist.filter.maxLength = the_selection.cells.length;
     else
         dom.wordlist.filter.removeAttribute('maxLength');
 
@@ -862,8 +863,8 @@ function add_filter_to_crossword() {
 }
 
 function filter_can_be_added() {
-    return dom.wordlist.filter.value.length === the_crossword.selection.cells.length &&
-        new RegExp('^' + cells_to_word(the_crossword.selection.cells) + '$').test(dom.wordlist.filter.value);
+    return dom.wordlist.filter.value.length === the_selection.cells.length &&
+        new RegExp('^' + cells_to_word(the_selection.cells) + '$').test(dom.wordlist.filter.value);
 }
 
 function show_wordlist() {
