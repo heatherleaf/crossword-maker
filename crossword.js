@@ -92,18 +92,22 @@ function make_editable(element) {
 // Dictionaries
 
 var the_dictionaries = {};
+var default_dictionaries;
 
 function select_dictionary() {
     deselect_crossword();
     let name = dom.info.dictselect.value;
-    if (name in the_dictionaries) return;
+    if (name in the_dictionaries) {
+        redraw_crossword();
+        return;
+    }
     
-    if (typeof default_dictionaries == "undefined") return;
-    if (name in default_dictionaries) {
+    if (typeof default_dictionaries == "object" && name in default_dictionaries) {
         console.log(`Loading dictionary ${name} from ${default_dictionaries[name]}`);
         var script = document.createElement('script');
         script.setAttribute('src', default_dictionaries[name]);
         script.setAttribute('type', 'text/javascript');
+        script.addEventListener('load', redraw_crossword);
         document.getElementsByTagName("head")[0].appendChild(script);
         delete default_dictionaries[name];
     }
