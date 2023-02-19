@@ -192,7 +192,7 @@ function add_dictionary(name, dict) {
 
 function populate_dictionaries() {
     if (typeof dom == "undefined") return;
-    dom.info.dictselect.innerHTML = "";
+    clear_element(dom.info.dictselect);
     for (let name in the_dictionaries) {
         let dictsize = 0;
         for (let subdict of Object.values(the_dictionaries[name])) {
@@ -327,7 +327,7 @@ function init_crossword(width, height) {
         cells: null,
     };
 
-    dom.crossword.table.innerHTML = null;
+    clear_element(dom.crossword.table);
 
     for (let y = 0; y < height; y++) {
         insert_crossword_row(y, width);
@@ -813,7 +813,7 @@ function set_wordlist_heading(head) {
 function clear_wordlist() {
     set_visibility(dom.wordlist.container, false);
     set_wordlist_heading("");
-    dom.wordlist.content.innerHTML = "";
+    clear_element(dom.wordlist.content);
     dom.wordlist.filter.value = "";
     the_wordlist = [];
 }
@@ -868,8 +868,8 @@ function filter_can_be_added() {
 }
 
 function show_wordlist() {
-    dom.wordlist.intro.innerHTML = "";
-    dom.wordlist.content.innerHTML = "";
+    clear_element(dom.wordlist.intro);
+    clear_element(dom.wordlist.content);
     let notletter = new RegExp("[^" + config.alphabet + "]", "g");
     let filtervalue = dom.wordlist.filter.value;
     filtervalue = filtervalue.toUpperCase().replaceAll(notletter, "");
@@ -925,6 +925,10 @@ function show_wordlist() {
 
 function set_visibility(elem, visible) {
     elem.style.display = visible ? "" : "none";
+}
+
+function clear_element(elem) {
+    elem.innerHTML = "";
 }
 
 
