@@ -138,6 +138,11 @@ select::-ms-expand {
     margin-right: 20px;
 }
 
+#crossword-title:empty::after {
+    content: "(Klicka och skriv)";
+    color: grey;
+}
+
 #crossword-wrapper td {
     border-style: none;
     vertical-align: middle;

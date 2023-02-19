@@ -18,6 +18,7 @@ window.addEventListener('DOMContentLoaded', initialize);
 function initialize() {
     dom = {
         crossword: {
+            title:     document.getElementById("crossword-title"),
             container: document.getElementById("crossword-container"),
             table:     document.getElementById("crossword-table"),
         },
@@ -48,6 +49,8 @@ function initialize() {
     dom.info.hidesolution.addEventListener('change', show_hide_solution);
     dom.buttons.upload.addEventListener('change', upload_dictionary);
 
+    make_editable(dom.crossword.title);
+
     load_crossword() || init_crossword(config.width, config.height);
     populate_dictionaries();
     select_dictionary();
@@ -68,6 +71,20 @@ function show_hide_solution() {
     deselect_crossword();
     let hidden = dom.info.hidesolution.checked;
     dom.crossword.container.classList.toggle("hide-solution", hidden);
+}
+
+function make_editable(element) {
+    element.contentEditable = true;
+    element.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === 'Tab') {
+            event.preventDefault();
+            document.activeElement.blur();
+        }
+    });
+    element.addEventListener('blur', (event) => {
+        element.innerText = element.innerText.trim();
+        save_crossword();
+    });
 }
 
 
@@ -189,7 +206,6 @@ function populate_dictionaries() {
         let opt = document.createElement('option');
         opt.text = `[Inte inläst] ${name}`;
         opt.value = name;
-        opt.addEventListener
         dom.info.dictselect.add(opt);
     }
 }
@@ -630,6 +646,7 @@ function on_mouse_up(evt) {
 }
 
 function on_mouse_down(evt) {
+    document.activeElement.blur();
     evt.preventDefault();
     clear_wordlist();
     let cell = evt.currentTarget;
@@ -651,6 +668,7 @@ function on_mouse_enter(evt) {
 
 function export_crossword() {
     return {
+        title: dom.crossword.title.innerText,
         width: crossword_width(),
         height: crossword_height(),
         cwords: the_crossword.cwords
@@ -667,13 +685,12 @@ function export_cell(cell) {
 }
 
 function import_crossword(raw_crossword) {
+    dom.crossword.title.innerText = raw_crossword.title;
     init_crossword(raw_crossword.width, raw_crossword.height);
-
     Array.from(all_crossword_cells())
         .forEach(function (cell, idx) { import_cell(cell, raw_crossword.cells[idx]) });
     the_crossword.cwords = raw_crossword.cwords
         .map(word_coords => word_coords.map(coord => crossword_cell(coord.x, coord.y)));
-
     redraw_crossword();
 }
 
