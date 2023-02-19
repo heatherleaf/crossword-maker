@@ -18,29 +18,29 @@ window.addEventListener('DOMContentLoaded', initialize);
 function initialize() {
     dom = {
         crossword: {
-            title:     document.getElementById("crossword-title"),
-            container: document.getElementById("crossword-container"),
-            table:     document.getElementById("crossword-table"),
+            title:     document.querySelector("#crossword-title"),
+            container: document.querySelector("#crossword-container"),
+            table:     document.querySelector("#crossword-table"),
         },
         info: {
-            dictselect:   document.getElementById("info-dictselect"),
-            hidesolution: document.getElementById("hide-solution"),
+            dictselect:   document.querySelector("#info-dictselect"),
+            hidesolution: document.querySelector("#hide-solution"),
         },
         wordlist: {
-            container: document.getElementById("wordlist-container"),
-            heading:   document.getElementById("wordlist-heading"),
-            intro:     document.getElementById("wordlist-intro"),
-            filter:    document.getElementById("wordlist-filter"),
-            wrapper:   document.getElementById("wordlist-filter-wrapper"),
-            content:   document.getElementById("wordlist-content"),
+            container: document.querySelector("#wordlist-container"),
+            heading:   document.querySelector("#wordlist-heading"),
+            intro:     document.querySelector("#wordlist-intro"),
+            filter:    document.querySelector("#wordlist-filter"),
+            wrapper:   document.querySelector("#wordlist-filter-wrapper"),
+            content:   document.querySelector("#wordlist-content"),
         },
         buttons: {
-            reset:   document.getElementById("button-reset"),
-            help:    document.getElementById("button-help"),
-            reload:  document.getElementById("button-wordlist-reload"),
-            addword: document.getElementById("button-wordlist-addword"),
-            upload:  document.getElementById("button-upload-dictionary"),
-            resize:  document.getElementsByClassName("button-resize"),
+            reset:   document.querySelector("#button-reset"),
+            help:    document.querySelector("#button-help"),
+            reload:  document.querySelector("#button-wordlist-reload"),
+            addword: document.querySelector("#button-wordlist-addword"),
+            upload:  document.querySelector("#button-upload-dictionary"),
+            resize:  document.querySelectorAll(".button-resize"),
         },
     };
 
@@ -108,7 +108,7 @@ function select_dictionary() {
         script.setAttribute('src', default_dictionaries[name]);
         script.setAttribute('type', 'text/javascript');
         script.addEventListener('load', redraw_crossword);
-        document.getElementsByTagName("head")[0].appendChild(script);
+        document.querySelector("head").appendChild(script);
         delete default_dictionaries[name];
     }
 }
@@ -300,12 +300,17 @@ function edit_cell_clue(cell) {
     save_crossword();
 }
 
+
+function selected_cells() {
+    return Array.from(dom.crossword.table.querySelectorAll(".selected"));
+}
+
 function select_cell(cell) {
     cell.classList.add("selected");
 }
 
 function deselect_all_cells() {
-    for (let c of dom.crossword.table.querySelectorAll(".selected")) {
+    for (let c of selected_cells()) {
         c.classList.remove("selected");
     }
 }
@@ -433,7 +438,7 @@ function crossword_cell(x, y) {
 }
 
 function all_crossword_cells() {
-    return dom.crossword.table.getElementsByTagName('td');
+    return Array.from(dom.crossword.table.querySelectorAll('td'));
 }
 
 function add_word_to_crossword(word) {
@@ -738,7 +743,7 @@ function calculate_theme() {
     for (let cell of all_crossword_cells()) {
         cell.classList.remove("theme");
     }
-    if (DEBUG) document.getElementById("debug-theme").innerText = "";
+    if (DEBUG) document.querySelector("#debug-theme").innerText = "";
 
     // We need at least 3 words to be able to infer a theme
     if (cwords.length <= 2) return;
@@ -779,7 +784,7 @@ function calculate_theme() {
                 (w,i) => `${w.word} (${word_similarity(theme_word.word, w.word).toFixed(2)})`
             ).join(", ");
         console.log(debuginfo);
-        document.getElementById("debug-theme").innerText = debuginfo;
+        document.querySelector("#debug-theme").innerText = debuginfo;
     }
 }
 
