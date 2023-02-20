@@ -363,9 +363,15 @@ function insert_crossword_cell(x, y) {
 
 function insert_crossword_row(y, width=null) {
     if (!width) width = crossword_width();
-    let row = dom.crossword.table.insertRow(y);
+    dom.crossword.table.insertRow(y);
     for (let x = 0; x < width; x++) {
         insert_crossword_cell(x, y);
+    }
+    for (let cw of get_cwords()) {
+        cw.dataset.cells = JSON.stringify(get_cword_coords(cw).map((c) => ({
+            x: c.x, 
+            y: c.y + (c.y >= y),
+        })));
     }
 }
 
@@ -373,6 +379,12 @@ function insert_crossword_column(x, height=null) {
     if (!height) height = crossword_height();
     for (let y = 0; y < height; y++) {
         insert_crossword_cell(x, y);
+    }
+    for (let cw of get_cwords()) {
+        cw.dataset.cells = JSON.stringify(get_cword_coords(cw).map((c) => ({
+            x: c.x + (c.x >= x), 
+            y: c.y,
+        })));
     }
 }
 
@@ -388,6 +400,12 @@ function delete_crossword_row(y) {
         }
     }
     dom.crossword.table.deleteRow(y);
+    for (let cw of get_cwords()) {
+        cw.dataset.cells = JSON.stringify(get_cword_coords(cw).map((c) => ({
+            x: c.x, 
+            y: c.y - (c.y > y),
+        })));
+    }
 }
 
 function delete_crossword_column(x) {
@@ -403,6 +421,12 @@ function delete_crossword_column(x) {
     }
     for (let y = 0; y < crossword_height(); y++) {
         dom.crossword.table.rows[y].deleteCell(x);
+    }
+    for (let cw of get_cwords()) {
+        cw.dataset.cells = JSON.stringify(get_cword_coords(cw).map((c) => ({
+            x: c.x - (c.x > x), 
+            y: c.y,
+        })));
     }
 }
 
