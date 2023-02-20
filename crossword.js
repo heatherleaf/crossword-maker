@@ -5,7 +5,7 @@ const config = {
     width: 15,
     height: 10,
     alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖÜ",
-    maxresults: 200,
+    maxresults: 100,
 };
 
 
@@ -21,6 +21,10 @@ function initialize() {
             title:     document.querySelector("#crossword-title"),
             container: document.querySelector("#crossword-container"),
             table:     document.querySelector("#crossword-table"),
+            theme:     document.querySelector("#crossword-theme"),
+            clues:     document.querySelector("#clues-container"),
+            horizclues:document.querySelector("#horizontal-clues"),
+            vertclues: document.querySelector("#vertical-clues"),
         },
         info: {
             dictselect:   document.querySelector("#info-dictselect"),
@@ -278,6 +282,7 @@ function cell_isempty(cell) {
 function clear_cell(cell) {
     set_cell_value(cell, "");
     cell.classList.value = "";
+    cell.dataset.cluenr = "";
 }
 
 function cell_value(cell) {
@@ -430,6 +435,7 @@ function resize_crossword() {
         }
     }
     redraw_crossword();
+    save_crossword();
 }
 
 function crossword_cell(x, y) {
@@ -452,7 +458,7 @@ function add_word_to_crossword(word) {
         }
     });
     console.log(`Added "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
-    the_crossword.cwords.push(cells);
+    add_cword(cells);
     redraw_crossword();
     save_crossword();
 }
@@ -463,50 +469,132 @@ function cells_to_word(cells) {
 
 function redraw_crossword() {
     deselect_crossword();
-    let occupied_cells = new Map();
-    for (let cword of the_crossword.cwords) {
-        for (let i = 0; i < cword.length; i++) {
-            let cell = cword[i];
-            let css_class = occupied_cells.get(cell);
-            if (!css_class && 0 < i && i < cword.length - 1) {
-                if (cell_x(cword[i-1]) === cell_x(cell) && cell_x(cell) < cell_x(cword[i+1])) {
-                    css_class = 'right-turn';
-                } else if (cell_x(cword[i-1]) < cell_x(cell) && cell_x(cell) === cell_x(cword[i+1])) {
-                    css_class = 'down-turn';
+    for (let cell of all_crossword_cells()) {
+        cell.dataset.cluenr = "";
+        cell.classList.remove('right-turn', 'down-turn');
+    }
+    let occupied_cells = new Set();
+    for (let cword of get_cwords()) {
+        let cwcells = get_cword_cells(cword);
+        cwcells[0].dataset.cluenr = cword.value;
+
+        for (let i = 0; i < cwcells.length; i++) {
+            let cell = cwcells[i];
+            if (0 < i && i < cwcells.length - 1) {
+                if (cell_x(cwcells[i-1]) === cell_x(cell) && cell_x(cell) < cell_x(cwcells[i+1])) {
+                    cell.classList.add('right-turn');
+                } else if (cell_x(cwcells[i-1]) < cell_x(cell) && cell_x(cell) === cell_x(cwcells[i+1])) {
+                    cell.classList.add('down-turn');
                 }
             } 
-            occupied_cells.set(cell, css_class);
+            occupied_cells.add(cell);
         }
     }
     for (let cell of all_crossword_cells()) {
-        if (occupied_cells.has(cell)) {
-            cell.classList.value = occupied_cells.get(cell) || "";
-        } else if (!cell_isblocked(cell)) {
+        if (!(occupied_cells.has(cell) || cell_isblocked(cell)))
             clear_cell(cell);
-        }
     }
     calculate_theme();
 }
 
+function get_cwords() {
+    return Array.from(dom.crossword.clues.querySelectorAll("li"));
+}
+
+function get_cword_coords(cword) {
+    return JSON.parse(cword.dataset.cells);
+}
+
+function get_cword_cells(cword) {
+    return get_cword_coords(cword).map(coord_to_cell);
+}
+
+function cword_clue(cword) {
+    return cword.querySelector(".cluetext");
+}
+
+function get_clue_value(clue) {
+    return clue.innerText;
+}
+
+function set_clue_value(clue, cluetext) {
+    clue.innerText = cluetext || "";
+}
+
+function coord_to_cell(coord) {
+    return crossword_cell(coord.x, coord.y);
+}
+
+function cell_to_coord(cell) {
+    return {x: cell_x(cell), y: cell_y(cell)};
+}
+
+function add_cword(cells, cluetext) {
+    let cword = document.createElement('li');
+    cword.dataset.cells = JSON.stringify(cells.map(cell_to_coord));
+    let word = cells_to_word(cells);
+    cword.innerHTML = `<span class="cluetext"></span> (${word.length})<span class="clueword"> = ${word}</span>`;
+    let list = is_horizontal(cells) ? dom.crossword.horizclues : dom.crossword.vertclues;
+    list.appendChild(cword);
+    let clue = cword_clue(cword);
+    make_editable(clue);
+    set_clue_value(clue, cluetext);
+    sort_and_number_cwords();
+}
+
+function delete_cword(cword) {
+    cword.remove();
+    sort_and_number_cwords();
+}
+
+function clear_cwords() {
+    clear_element(dom.crossword.horizclues);
+    clear_element(dom.crossword.vertclues);
+    sort_and_number_cwords();
+}
+
+function is_horizontal(cells) {
+    return cell_y(cells[0]) === cell_y(cells[1]);
+}
+
+function sort_and_number_cwords() {
+    let cwords = get_cwords().sort((a, b) => {
+        let acoord = get_cword_coords(a)[0];
+        let bcoord = get_cword_coords(b)[0];
+        return acoord.y - bcoord.y || acoord.x - bcoord.x;
+    });
+    let prev_firstcell = null;
+    let num = 0;
+    for (let cw of cwords) {
+        let cell = get_cword_cells(cw)[0];
+        if (cell !== prev_firstcell) num++;
+        prev_firstcell = cell;
+        cw.parentElement.appendChild(cw);
+        cw.value = num;
+    }
+}
+
+
 function delete_words_at_cell(cell) {
     deselect_crossword();
-    let occupied_by = (cword) => cword.some((c) => c === cell);
-    let to_remove = the_crossword.cwords.filter(occupied_by);
+    let occupied_by = (cword) => get_cword_cells(cword).some((c) => c === cell);
+    let to_remove = get_cwords().filter(occupied_by);
     if (to_remove.length === 0) return;
     let ok = confirm("Är du säker att du vill ta bort " +
                      (to_remove.length>1 ? "orden " : "ordet ") +
-                     to_remove.map((cw) => cells_to_word(cw)).join(" och ") + "?");
+                     to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + "?");
     if (!ok) return;
-    the_crossword.cwords = the_crossword.cwords.filter((cw) => !occupied_by(cw));
+    to_remove.forEach(delete_cword);
     redraw_crossword();
+    save_crossword();
 }
 
 function clear_crossword() {
     let ok = confirm("Är du säker att du vill radera korsordet?");
     if (!ok) return;
     deselect_crossword();
-    the_crossword.cwords = [];
-    for (let cell of all_crossword_cells()) clear_cell(cell);
+    clear_cwords();
+    all_crossword_cells().forEach(clear_cell);
     redraw_crossword();
     save_crossword();
 }
@@ -550,7 +638,7 @@ function calculate_selection(start, goal) {
         cell = next_cell(cell, horiz);
     }
 
-    let crossing_words = the_crossword.cwords.filter((cw) => cw.some((c) => c === newgoal));
+    let crossing_words = get_cwords().filter((cw) => get_cword_cells(cw).some((c) => c === newgoal));
     if (crossing_words.length > 0) {
         if (horiz  && cell_x(newgoal) === cell_x(goal) && cell_y(newgoal) < cell_y(goal) ||
             !horiz && cell_y(newgoal) === cell_y(goal) && cell_x(newgoal) < cell_x(goal) ||
@@ -558,9 +646,10 @@ function calculate_selection(start, goal) {
             !horiz && newgoal.classList.contains('right-turn'))
         {
             for (let cw of crossing_words) {
-                let i = 1 + cw.indexOf(newgoal);
-                if (0 < i && i < cw.length && next_cell(newgoal, !horiz) === cw[i]) {
-                    while (i < cw.length) {
+                let cwcells = get_cword_cells(cw);
+                let i = 1 + cwcells.indexOf(newgoal);
+                if (0 < i && i < cwcells.length && next_cell(newgoal, !horiz) === cwcells[i]) {
+                    while (i < cwcells.length) {
                         cells.push(cw[i++]);
                     }
                     break;
@@ -680,12 +769,11 @@ function export_crossword() {
         title: dom.crossword.title.innerText,
         width: crossword_width(),
         height: crossword_height(),
-        cwords: the_crossword.cwords
-            .map(cells => cells.map(cell => ({
-                x: cell_x(cell),
-                y: cell_y(cell)
-            }))),
-        cells: Array.from(all_crossword_cells()).map(export_cell)
+        cwords: get_cwords().map((cw) => ({
+            coords: get_cword_coords(cw),
+            clue: get_clue_value(cword_clue(cw)),
+        })),
+        cells: all_crossword_cells().map(cell_value),
     };
 }
 
@@ -696,24 +784,25 @@ function export_cell(cell) {
 function import_crossword(raw_crossword) {
     dom.crossword.title.innerText = raw_crossword.title;
     init_crossword(raw_crossword.width, raw_crossword.height);
-    Array.from(all_crossword_cells())
-        .forEach(function (cell, idx) { import_cell(cell, raw_crossword.cells[idx]) });
-    the_crossword.cwords = raw_crossword.cwords
-        .map(word_coords => word_coords.map(coord => crossword_cell(coord.x, coord.y)));
+    all_crossword_cells().forEach((cell, idx) => {
+        set_cell_value(cell, raw_crossword.cells[idx]);
+    });
+    raw_crossword.cwords.forEach((cword) => {
+        let cells = cword.coords.map(coord_to_cell);
+        add_cword(cells, cword.clue);
+    });
     redraw_crossword();
-}
-
-function import_cell(cell, raw_cell) {
-    set_cell_value(cell, raw_cell);
 }
 
 function save_crossword() {
     window.localStorage.crossword = JSON.stringify(export_crossword());
+    console.log("Crossword saved");
 }
 
 function load_crossword() {
     try {
         import_crossword(JSON.parse(window.localStorage.crossword));
+        console.log("Crossword loaded");
         return true;
     } catch (e) {
         return false;
@@ -732,7 +821,8 @@ const THEME_CONSTANTS = {
 
 function calculate_theme() {
     // Collect all cross-words that have a wordvector
-    let cwords = the_crossword.cwords.flatMap((cells) => {
+    let cwords = get_cwords().flatMap((cw) => {
+        let cells = get_cword_cells(cw);
         let word = cells_to_word(cells);
         if (!get_vector(word)) return [];
         return {cells:cells, word:word};
@@ -824,6 +914,7 @@ function set_wordlist_heading(head) {
 
 function clear_wordlist() {
     set_visibility(dom.wordlist.container, false);
+    set_visibility(dom.crossword.clues, true);
     set_wordlist_heading("");
     clear_element(dom.wordlist.content);
     dom.wordlist.filter.value = "";
@@ -843,6 +934,7 @@ function find_matching_words() {
     dom.buttons.reload.addEventListener('click', show_wordlist);
     dom.buttons.addword.addEventListener('click', add_filter_to_crossword);
     set_visibility(dom.wordlist.container, true);
+    set_visibility(dom.crossword.clues, false);
     if (the_selection.cells.length > 0)
         dom.wordlist.filter.maxLength = the_selection.cells.length;
     else

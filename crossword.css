@@ -92,7 +92,13 @@ input[type="checkbox"]:checked + label {
         display: none;
     }
 
-    #heading-container, button {
+    #main-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    #heading-container, button, .clueword {
         display: none;
     }
 
@@ -130,12 +136,12 @@ select::-ms-expand {
   display: none;
 }
 
-#main-container {
+#main-container, #clues-container {
     display: flex;
     flex-wrap: wrap;
 }
 
-#wordlist-container {
+#wordlist-container, #clues-container > div {
     margin-left: var(--margin);
 }
 
@@ -145,7 +151,7 @@ select::-ms-expand {
     flex-shrink: 0;
 }
 
-#crossword-title:empty::after {
+#crossword-title:empty::after, .cluetext:empty::after {
     content: "(Klicka och skriv)";
     color: grey;
 }
@@ -157,6 +163,10 @@ select::-ms-expand {
 
 #crossword-theme:not(:empty)::before {
     content: "Tema-ord: ";
+}
+
+.clueword {
+    color: red;
 }
 
 #crossword-wrapper td {
@@ -198,6 +208,16 @@ select::-ms-expand {
     background-color: white;
 }
 
+#crossword-table td::before {
+    color: black;
+    position: absolute;
+    font-family: var(--mainfont);
+    font-size: 12px;
+    content: attr(data-cluenr);
+    left: 2px;
+    top: 0;
+}
+
 #crossword-table td.right-turn::after,
 #crossword-table td.down-turn::after {
     color: black;
@@ -222,7 +242,7 @@ select::-ms-expand {
 }
 
 #crossword-table td.blocked {
-    color: white;
+    color: transparent;
     background-color: black;
     font-size: 8px;
     font-family: var(--mainfont);
@@ -238,10 +258,6 @@ select::-ms-expand {
 
 #crossword-container.hide-solution #crossword-table td {
     color: transparent;
-}
-
-#crossword-container.hide-solution #crossword-table td.blocked {
-    color: white;
 }
 
 #crossword-container.hide-solution #crossword-theme {
