@@ -98,7 +98,7 @@ input[type="checkbox"]:checked + label {
         width: 100%;
     }
 
-    #heading-container, button, .clueword {
+    #heading-container, button {
         display: none;
     }
 
@@ -252,15 +252,16 @@ select::-ms-expand {
     color: green;
 }
 
-#crossword-container.hide-solution {
+#main-container.hide-solution {
     pointer-events: none;
 }
 
-#crossword-container.hide-solution #crossword-table td {
+#main-container.hide-solution #crossword-table td {
     color: transparent;
 }
 
-#crossword-container.hide-solution #crossword-theme {
+#main-container.hide-solution .clueword,
+#main-container.hide-solution #crossword-theme {
     display: none;
 }
 

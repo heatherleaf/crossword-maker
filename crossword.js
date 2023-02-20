@@ -18,8 +18,8 @@ window.addEventListener('DOMContentLoaded', initialize);
 function initialize() {
     dom = {
         crossword: {
+            container: document.querySelector("#main-container"),
             title:     document.querySelector("#crossword-title"),
-            container: document.querySelector("#crossword-container"),
             table:     document.querySelector("#crossword-table"),
             theme:     document.querySelector("#crossword-theme"),
             clues:     document.querySelector("#clues-container"),
