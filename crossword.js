@@ -484,7 +484,14 @@ function add_word_to_crossword(word) {
             throw `Failed to add "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`;
         }
     });
-    console.log(`Added "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+    for (let covered of get_cwords()) {
+        let covered_cells = get_cword_cells(covered);
+        if (covered_cells.every((c) => cells.includes(c))) {
+            console.log(`Removing covered word "${cells_to_word(covered_cells)}"`);
+            delete_cword(covered);
+        }
+    }
+    console.log(`Adding word "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
     add_cword(cells);
     redraw_crossword();
     save_crossword();
