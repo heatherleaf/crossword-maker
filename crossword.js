@@ -487,7 +487,16 @@ function add_word_to_crossword(word) {
     let covered_words = [];
     for (let covered of get_cwords()) {
         let covered_cells = get_cword_cells(covered);
-        if (covered_cells.every((c) => cells.includes(c))) {
+        let is_covered = true;
+        for (let c of covered_cells) {
+            if (!cells.includes(c)) {
+                is_covered = false;
+                break;
+            } else if (c.classList.contains('right-turn') || c.classList.contains('down-turn')) {
+                break;
+            }
+        }
+        if (is_covered) {
             console.log(`Covered word: "${cells_to_word(covered_cells)}"`);
             covered_words.push(covered);
         }
