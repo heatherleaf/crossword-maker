@@ -82,7 +82,7 @@ input[type="checkbox"]:checked + label {
 }
 
 @media screen {
-    select:hover, button:hover, label:hover, #crossword-table td:hover {
+    select:hover, button:hover, label:hover, #crossword-table .cwcell:hover {
         background-color: #eee !important;
     }
 }
@@ -181,6 +181,7 @@ select::-ms-expand {
 }
 
 #crossword-table {
+    table-layout: fixed;
     background-color: #ccc;
     cursor: cell;
     user-select: none;
@@ -195,20 +196,26 @@ select::-ms-expand {
 
 #crossword-table td {
     border: black solid 1px;
+    padding: 0;
+}
+
+#crossword-table .cwcell {
+    padding: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     width: 1.5em;
     height: 1.5em;
     font-size: 24px;
     font-family: var(--monofont);
-    vertical-align: middle;
-    text-align: center;
     position: relative;
 }
 
-#crossword-table td:not(:empty) {
+#crossword-table .cwcell:not(:empty) {
     background-color: white;
 }
 
-#crossword-table td::before {
+#crossword-table .cwcell::before {
     color: black;
     position: absolute;
     font-family: var(--mainfont);
@@ -218,37 +225,37 @@ select::-ms-expand {
     top: 0;
 }
 
-#crossword-table td.right-turn::after,
-#crossword-table td.down-turn::after {
+#crossword-table .cwcell.right-turn::after,
+#crossword-table .cwcell.down-turn::after {
     color: black;
     position: absolute;
     font-size: 16px;
 }
 
-#crossword-table td.right-turn::after {
+#crossword-table .cwcell.right-turn::after {
     content: "\21B3";
     left: 2px;
     bottom: 0;
 }
 
-#crossword-table td.down-turn::after {
+#crossword-table .cwcell.down-turn::after {
     content: "\21B4";
     right: 0;
     top: 0;
 }
 
-#crossword-table td.selected {
+#crossword-table .cwcell.selected {
     background-color: yellow;
 }
 
-#crossword-table td.blocked {
+#crossword-table .cwcell.blocked {
     color: transparent;
     background-color: black;
     font-size: 8px;
     font-family: var(--mainfont);
 }
 
-#crossword-table td.theme {
+#crossword-table .cwcell.theme {
     color: green;
 }
 
@@ -256,7 +263,7 @@ select::-ms-expand {
     pointer-events: none;
 }
 
-#main-container.hide-solution #crossword-table td {
+#main-container.hide-solution #crossword-table .cwcell {
     color: transparent;
 }
 

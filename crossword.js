@@ -246,11 +246,11 @@ function upload_dictionary() {
 // Cells 
 
 function cell_x(cell) {
-    return cell.cellIndex;
+    return cell.closest('td').cellIndex;
 }
 
 function cell_y(cell) {
-    return cell.parentElement.rowIndex;
+    return cell.closest('tr').rowIndex;
 }
 
 function move_to_cell(cell, dx, dy) {
@@ -281,7 +281,7 @@ function cell_isempty(cell) {
 
 function clear_cell(cell) {
     set_cell_value(cell, "");
-    cell.classList.value = "";
+    cell.classList.value = "cwcell";
     cell.dataset.cluenr = "";
 }
 
@@ -354,7 +354,8 @@ function init_crossword(width, height) {
 
 function insert_crossword_cell(x, y) {
     let row = dom.crossword.table.rows[y];
-    let cell = row.insertCell(x);
+    let cell = row.insertCell(x).appendChild(document.createElement('div'));
+    clear_cell(cell);
     cell.addEventListener('mousedown', on_mouse_down);
     cell.addEventListener('mouseenter', on_mouse_enter);
     cell.addEventListener('dblclick', on_dbl_click);
@@ -467,11 +468,11 @@ function resize_crossword() {
 
 function crossword_cell(x, y) {
     return 0 <= x && x < crossword_width() && 0 <= y && y < crossword_height() &&
-        dom.crossword.table.rows[y].cells[x];
+        dom.crossword.table.rows[y].cells[x].querySelector('.cwcell');
 }
 
 function all_crossword_cells() {
-    return Array.from(dom.crossword.table.querySelectorAll('td'));
+    return Array.from(dom.crossword.table.querySelectorAll('.cwcell'));
 }
 
 function add_word_to_crossword(word) {
