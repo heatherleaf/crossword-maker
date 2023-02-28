@@ -484,12 +484,26 @@ function add_word_to_crossword(word) {
             throw `Failed to add "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`;
         }
     });
+    let covered_words = [];
     for (let covered of get_cwords()) {
         let covered_cells = get_cword_cells(covered);
         if (covered_cells.every((c) => cells.includes(c))) {
-            console.log(`Removing covered word "${cells_to_word(covered_cells)}"`);
-            delete_cword(covered);
+            console.log(`Covered word: "${cells_to_word(covered_cells)}"`);
+            covered_words.push(covered);
         }
+    }
+    if (covered_words.length > 0) {
+        let ok = confirm(
+            "Vill du ersätta " +
+            (covered_words.length>1 ? "orden " : "ordet ") +
+            covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + 
+            " med " + cells_to_word(cells) + "?");
+        if (!ok) {
+            redraw_crossword();
+            save_crossword();
+            return;
+        }
+        covered_words.forEach(delete_cword);
     }
     console.log(`Adding word "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
     add_cword(cells);
