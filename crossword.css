@@ -251,8 +251,6 @@ select::-ms-expand {
 #crossword-table .cwcell.blocked {
     color: transparent;
     background-color: black;
-    font-size: 8px;
-    font-family: var(--mainfont);
 }
 
 #crossword-table .cwcell.theme {
