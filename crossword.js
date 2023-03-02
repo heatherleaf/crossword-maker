@@ -567,6 +567,10 @@ function get_cword_coords(cword) {
     return JSON.parse(cword.dataset.cells);
 }
 
+function set_cword_coords(cword, cells) {
+    cword.dataset.cells = JSON.stringify(cells.map(cell_to_coord));
+}
+
 function get_cword_cells(cword) {
     return get_cword_coords(cword).map(coord_to_cell);
 }
@@ -593,7 +597,7 @@ function cell_to_coord(cell) {
 
 function add_cword(cells, cluetext) {
     let cword = document.createElement('li');
-    cword.dataset.cells = JSON.stringify(cells.map(cell_to_coord));
+    set_cword_coords(cword, cells);
     let word = cells_to_word(cells);
     cword.innerHTML = `<span class="cluetext"></span> (${word.length})<span class="clueword"> = ${word}</span>`;
     let list = is_horizontal(cells) ? dom.crossword.horizclues : dom.crossword.vertclues;
