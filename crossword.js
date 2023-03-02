@@ -119,13 +119,14 @@ function select_dictionary() {
 
 function add_dictionary(name, dict) {
     the_dictionaries[name] = {};
+    let added = not_added = 0;
     function add_to_dict(word, value=true) {
+        added++;
         word = word.toUpperCase();
         if (!the_dictionaries[name][word.length]) the_dictionaries[name][word.length] = {};
         the_dictionaries[name][word.length][word] = value;
     }
     let isword = new RegExp("^[" + config.alphabet + "]+$", "i");
-    let not_added = 0;
     if (typeof dict === "string") {
         // The dictionary is a string of one word per line
         // Optionally, a second "word" in the line is a Base64-encoded binary word vector
@@ -162,9 +163,6 @@ function add_dictionary(name, dict) {
             if (isword.test(key)) {
                 // The dictionary is of the form {word: value, word: value, ...}
                 add_to_dict(key, dict[key]);
-                if (dict[key] instanceof Array) {
-                    let vals = Object.values(dict[key]);
-                }
             } else if (!isNaN(Number(key))) {
                 // The dictionary is of the form
                 // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
@@ -188,8 +186,8 @@ function add_dictionary(name, dict) {
     }
     // The final dictionary is of the form
     // {length: {word: value, word: value, ...}, length: {word: value, ...}, ...}
-    
-    console.log(`Loaded dictionary: ${name}` + (not_added>0 ? ` (${not_added} words not added)`: ""));
+
+    console.log(`Loaded ${added} words from dictionary: ${name}` + (not_added>0 ? ` (${not_added} words not added)`: ""));
     populate_dictionaries();
     dom.info.dictselect.value = name;
 }
