@@ -512,7 +512,7 @@ function add_word_to_crossword(word) {
             return;
         }
         console.log(`Replacing ${covered_text} by ${word} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
-        let cluetext = covered_words.map((cw) => get_clue_value(cword_clue(cw))).join(" ; ");
+        let cluetext = covered_words.flatMap((cw) => get_clue_value(cword_clue(cw)) || []).join(" ; ");
         add_cword(cells, cluetext);
         covered_words.forEach(delete_cword);
     } else {
