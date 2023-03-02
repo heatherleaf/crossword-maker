@@ -267,12 +267,12 @@ function prev_cell(cell, horiz) {
 }
 
 function cell_isletter(cell)  {
-    let val = cell_value(cell);
+    let val = cell && cell_value(cell);
     return val && val.length === 1;
 }
 
 function cell_isblocked(cell) {
-    let val = cell_value(cell);
+    let val = cell && cell_value(cell);
     return val && val.length > 1;
 }
 
@@ -678,12 +678,12 @@ function calculate_selection(start, goal) {
         newgoal = cell;
         // extend selection
         cell = move_to_cell(start, -dx, -dy);
-        while (cell && cell_isletter(cell)) {
+        while (cell_isletter(cell)) {
             start = cell;
             cell = move_to_cell(cell, -dx, -dy);
         }
         cell = move_to_cell(newgoal, dx, dy);
-        while (cell && cell_isletter(cell)) {
+        while (cell_isletter(cell)) {
             newgoal = cell;
             cell = move_to_cell(cell, dx, dy);
         }
@@ -733,12 +733,12 @@ function infer_constraints() {
             let constr = "?";
             let horiz = cell_y(cell) === cell_y(cells[i>0 ? i-1 : i+1]);
             let orthcell = prev_cell(cell, !horiz);
-            while (orthcell && cell_isletter(orthcell)) {
+            while (cell_isletter(orthcell)) {
                 constr = cell_value(orthcell) + constr;
                 orthcell = prev_cell(orthcell, !horiz);
             }
             orthcell = next_cell(cell, !horiz);
-            while (orthcell && cell_isletter(orthcell)) {
+            while (cell_isletter(orthcell)) {
                 constr = constr + cell_value(orthcell);
                 orthcell = next_cell(orthcell, !horiz);
             }
