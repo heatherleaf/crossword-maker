@@ -498,20 +498,18 @@ function add_word_to_crossword(word) {
             }
         }
         if (is_covered) {
-            console.log(`Covered word: "${cells_to_word(covered_cells)}"`);
             covered_words.push(covered);
         }
     }
     if (covered_words.length > 0) {
-        let ok = confirm(
-            "Vill du ersätta " +
-            (covered_words.length>1 ? "orden " : "ordet ") +
-            covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + 
-            " med " + cells_to_word(cells) + "?");
+        let covered_text = covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(", ");
+        console.log(`Covered words: ${covered_text}`);
+        let ok = confirm(`Vill du ersätta ${covered_text} med ${cells_to_word(cells)}?`);
         if (!ok) {
             save_and_redraw_crossword();
             return;
         }
+        console.log(`Replacing ${covered_text} by ${word} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
         covered_words.forEach(delete_cword);
     }
     console.log(`Adding word "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
@@ -650,6 +648,7 @@ function delete_words_at_cell(cell) {
                      (to_remove.length>1 ? "orden " : "ordet ") +
                      to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + "?");
     if (!ok) return;
+    console.log("Removing " + to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(", "));
     to_remove.forEach(delete_cword);
     save_and_redraw_crossword();
 }
@@ -657,6 +656,7 @@ function delete_words_at_cell(cell) {
 function clear_crossword() {
     let ok = confirm("Är du säker att du vill radera korsordet?");
     if (!ok) return;
+    console.log("Clearing the crossword");
     deselect_crossword();
     clear_cwords();
     all_crossword_cells().forEach(clear_cell);
@@ -750,7 +750,7 @@ function infer_constraints() {
             constraints.push(constr);
         }
     }
-    console.log(`Constraints: ${wordregex} / ${constraints.join(", ")}`);
+    if (DEBUG) console.log(`Constraints: ${wordregex} / ${constraints.join(", ")}`);
     return [wordregex, constraints];
 }
 
@@ -1004,7 +1004,7 @@ function find_matching_words() {
         }
     }
     time += Date.now();
-    console.log(`${found} matches, in ${time} ms`);
+    if (DEBUG) console.log(`${found} matches, in ${time} ms`);
     show_wordlist();
 }
 
