@@ -41,8 +41,7 @@ function initialize() {
         buttons: {
             reset:   document.querySelector("#button-reset"),
             help:    document.querySelector("#button-help"),
-            reload:  document.querySelector("#button-wordlist-reload"),
-            addword: document.querySelector("#button-wordlist-addword"),
+            wordlist:document.querySelector("#button-wordlist"),
             upload:  document.querySelector("#button-upload-dictionary"),
             resize:  document.querySelectorAll(".button-resize"),
         },
@@ -985,8 +984,7 @@ function find_matching_words() {
     }
 
     dom.wordlist.filter.addEventListener('input', show_wordlist);
-    dom.buttons.reload.addEventListener('click', show_wordlist);
-    dom.buttons.addword.addEventListener('click', add_filter_to_crossword);
+    dom.buttons.wordlist.addEventListener('click', reload_wordlist_or_add_word);
     set_visibility(dom.wordlist.container, true);
     set_visibility(dom.crossword.clues, false);
     if (selected_cells().length > 0)
@@ -1013,10 +1011,12 @@ function find_matching_words() {
     show_wordlist();
 }
 
-function add_filter_to_crossword() {
+function reload_wordlist_or_add_word() {
     if (filter_can_be_added()) {
         let word = dom.wordlist.filter.value.toUpperCase();
         add_word_to_crossword(word);
+    } else {
+        show_wordlist();
     }
 }
 
@@ -1035,11 +1035,20 @@ function show_wordlist() {
     let regex = filtervalue.replaceAll("", ".*");
     regex = new RegExp("^" + regex + "$");
     let filtered = the_wordlist.filter((cw) => cw.word.match(regex));
-    console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
+    if (DEBUG) console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
     dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
-    set_visibility(dom.buttons.reload, filtered.length > config.maxresults);
-    set_visibility(dom.buttons.addword, filter_can_be_added());
-
+    if (filtered.length > 1) {
+        set_visibility(dom.buttons.wordlist, true);
+        dom.buttons.wordlist.title = "Slumpa nya ord";
+        dom.buttons.wordlist.innerHTML = "&#x27f2;";
+    } else if (filter_can_be_added()) {
+        set_visibility(dom.buttons.wordlist, true);
+        dom.buttons.wordlist.title = "Lägg till i korsordet";
+        dom.buttons.wordlist.innerText = "Lägg till";
+    } else {
+        set_visibility(dom.buttons.wordlist, false);
+    }
+    
     if (get_theme()) {
         shuffle_by_vector_similarity(filtered, get_theme());
     } else {
