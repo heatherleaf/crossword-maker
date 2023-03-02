@@ -980,7 +980,7 @@ function find_matching_words() {
     let found = 0;
     let [regex, constraints] = infer_constraints();
     if (regex.indexOf("?") < 0) {
-        window.setTimeout(deselect_crossword, 100);
+        delay_call(deselect_crossword);
         return;
     }
 
@@ -1074,7 +1074,7 @@ function show_wordlist() {
             add_word_to_crossword(cw.word);
         });
     }
-    window.setTimeout(() => dom.wordlist.filter.focus(), 100);
+    delay_call(() => dom.wordlist.filter.focus());
 }
 
 
@@ -1087,6 +1087,11 @@ function set_visibility(elem, visible) {
 
 function clear_element(elem) {
     elem.innerHTML = "";
+}
+
+function delay_call(fn) {
+    // Delay the call by just a little, so that the DOM has time to update itself before the call.
+    window.setTimeout(fn, 100); // Delay by 100 ms
 }
 
 
