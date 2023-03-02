@@ -485,6 +485,7 @@ function add_word_to_crossword(word) {
             throw `Failed to add "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`;
         }
     });
+
     let covered_words = [];
     for (let covered of get_cwords()) {
         let covered_cells = get_cword_cells(covered);
@@ -501,6 +502,7 @@ function add_word_to_crossword(word) {
             covered_words.push(covered);
         }
     }
+
     if (covered_words.length > 0) {
         let covered_text = covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(", ");
         console.log(`Covered words: ${covered_text}`);
@@ -510,10 +512,13 @@ function add_word_to_crossword(word) {
             return;
         }
         console.log(`Replacing ${covered_text} by ${word} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+        let cluetext = covered_words.map((cw) => get_clue_value(cword_clue(cw))).join(" ; ");
+        add_cword(cells, cluetext);
         covered_words.forEach(delete_cword);
+    } else {
+        console.log(`Adding ${word} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+        add_cword(cells);
     }
-    console.log(`Adding word "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
-    add_cword(cells);
     save_and_redraw_crossword();
 }
 
