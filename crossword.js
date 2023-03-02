@@ -98,6 +98,8 @@ function make_editable(element) {
 var the_dictionaries = {};
 var default_dictionaries;
 
+const UPLOAD = "[=-UPLOAD-=]";
+
 function select_dictionary() {
     deselect_crossword();
     let name = dom.info.dictselect.value;
@@ -114,6 +116,10 @@ function select_dictionary() {
         script.addEventListener('load', save_and_redraw_crossword);
         document.querySelector("head").appendChild(script);
         delete default_dictionaries[name];
+    }
+
+    if (name === UPLOAD) {
+        dom.buttons.upload.click();
     }
 }
 
@@ -214,6 +220,11 @@ function populate_dictionaries() {
         opt.value = name;
         dom.info.dictselect.add(opt);
     }
+
+    let opt = document.createElement('option');
+    opt.text = "Ladda upp ett eget lexikon";
+    opt.value = UPLOAD;
+    dom.info.dictselect.add(opt);
 }
 
 function lookup_dictionary(len) {
