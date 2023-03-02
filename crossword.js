@@ -58,6 +58,7 @@ function initialize() {
     load_crossword() || init_crossword(config.width, config.height);
     populate_dictionaries();
     select_dictionary();
+    save_and_redraw_crossword();
     console.log("Finished initialization");
 }
 
@@ -87,7 +88,7 @@ function make_editable(element) {
     });
     element.addEventListener('blur', (event) => {
         element.innerText = element.innerText.trim();
-        save_crossword();
+        save_and_redraw_crossword();
     });
 }
 
@@ -102,7 +103,7 @@ function select_dictionary() {
     deselect_crossword();
     let name = dom.info.dictselect.value;
     if (name in the_dictionaries) {
-        redraw_crossword();
+        save_and_redraw_crossword();
         return;
     }
     
@@ -111,7 +112,7 @@ function select_dictionary() {
         var script = document.createElement('script');
         script.setAttribute('src', default_dictionaries[name]);
         script.setAttribute('type', 'text/javascript');
-        script.addEventListener('load', redraw_crossword);
+        script.addEventListener('load', save_and_redraw_crossword);
         document.querySelector("head").appendChild(script);
         delete default_dictionaries[name];
     }
@@ -301,7 +302,7 @@ function toggle_blocked_cell(cell) {
     } else {
         set_cell_value(cell, "##");
     }
-    save_crossword();
+    save_and_redraw_crossword();
 }
 
 
@@ -462,8 +463,7 @@ function resize_crossword() {
             delete_crossword_column(dir === "w" ? 0 : crossword_width()-1);
         }
     }
-    redraw_crossword();
-    save_crossword();
+    save_and_redraw_crossword();
 }
 
 function crossword_cell(x, y) {
@@ -509,20 +509,24 @@ function add_word_to_crossword(word) {
             covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + 
             " med " + cells_to_word(cells) + "?");
         if (!ok) {
-            redraw_crossword();
-            save_crossword();
+            save_and_redraw_crossword();
             return;
         }
         covered_words.forEach(delete_cword);
     }
     console.log(`Adding word "${word}" at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
     add_cword(cells);
-    redraw_crossword();
-    save_crossword();
+    save_and_redraw_crossword();
 }
 
 function cells_to_word(cells) {
     return cells.map((c) => cell_isletter(c) ? cell_value(c) : ".").join("");
+}
+
+function save_and_redraw_crossword() {
+    save_crossword();
+    load_crossword();
+    redraw_crossword();
 }
 
 function redraw_crossword() {
@@ -643,8 +647,7 @@ function delete_words_at_cell(cell) {
                      to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + "?");
     if (!ok) return;
     to_remove.forEach(delete_cword);
-    redraw_crossword();
-    save_crossword();
+    save_and_redraw_crossword();
 }
 
 function clear_crossword() {
@@ -653,8 +656,7 @@ function clear_crossword() {
     deselect_crossword();
     clear_cwords();
     all_crossword_cells().forEach(clear_cell);
-    redraw_crossword();
-    save_crossword();
+    save_and_redraw_crossword();
 }
 
 function calculate_selection(start, goal) {
@@ -835,7 +837,6 @@ function import_crossword(raw_crossword) {
         let cells = cword.coords.map(coord_to_cell);
         add_cword(cells, cword.clue);
     });
-    redraw_crossword();
 }
 
 function save_crossword() {
