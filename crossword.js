@@ -518,7 +518,54 @@ function add_word_to_crossword(word) {
         console.log(`Adding ${word} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
         add_cword(cells);
     }
+
+    delay_call(merge_cells_and_cwords);
+}
+
+function merge_cells_and_cwords() {
+    for (let start_cell of all_crossword_cells()) {
+        if (cell_isletter(start_cell)) {
+            for (let horiz of [true, false]) {
+                if (cell_isletter(prev_cell(start_cell, horiz))) continue;
+                let to_merge = [];
+                let cells = [];
+                let cell = start_cell;
+                while (cell_isletter(cell)) {
+                    let cword = find_cword_starting_in_cell(cell, horiz);
+                    if (cword) {
+                        to_merge.push(cword);
+                        cells.push(...get_cword_cells(cword));
+                        horiz = is_horizontal(cells.slice(-2));
+                    } else {
+                        cells.push(cell);
+                    }
+                    cell = next_cell(cells[cells.length-1], horiz);
+                }
+                if (cells.length <= 1) continue;
+                if (to_merge.length == 1 && cells.length == get_cword_cells(to_merge[0]).length) continue;
+                if (to_merge.length >= 1) {
+                    let merged_text = to_merge.map((cw) => cells_to_word(get_cword_cells(cw))).join(", ");
+                    console.log(`Replacing ${merged_text} by ${cells_to_word(cells)} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+                    let cluetext = to_merge.flatMap((cw) => get_clue_value(cword_clue(cw)) || []).join(" ; ");
+                    add_cword(cells, cluetext);
+                    to_merge.forEach(delete_cword);
+                } else {
+                    console.log(`Adding ${cells_to_word(cells)} at ${cell_x(cells[0])}:${cell_y(cells[0])}`);
+                    add_cword(cells);
+                }
+            }
+        }
+    }
     save_and_redraw_crossword();
+}
+
+function find_cword_starting_in_cell(cell, horiz) {
+    let cwords = get_cwords().filter((cw) => {
+        let cwcells = get_cword_cells(cw);
+        return horiz === is_horizontal(cwcells) && cell === cwcells[0];
+    });
+    if (cwords.length > 1) console.error(`${cwords.length} words start in the same cell!`);
+    return cwords.length ? cwords[0] : null;
 }
 
 function cells_to_word(cells) {
@@ -655,6 +702,7 @@ function delete_words_at_cell(cell) {
     console.log("Removing " + to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(", "));
     to_remove.forEach(delete_cword);
     save_and_redraw_crossword();
+    delay_call(merge_cells_and_cwords);
 }
 
 function clear_crossword() {
