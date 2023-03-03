@@ -88,6 +88,11 @@ select, button, label {
     appearance: none;
 }
 
+#ui-languages label {
+    font-size: var(--large-size);
+    padding: 0 6px;
+}
+
 #menu-container input {
     display: none;
 }

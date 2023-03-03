@@ -29,6 +29,7 @@ function initialize() {
         info: {
             dictselect:   document.querySelector("#info-dictselect"),
             hidesolution: document.querySelector("#hide-solution"),
+            languages:    document.querySelector("#ui-languages"),
         },
         wordlist: {
             container: document.querySelector("#wordlist-container"),
@@ -45,6 +46,7 @@ function initialize() {
             resize:  document.querySelectorAll(".button-resize"),
         },
     };
+    i18n_initialize();
 
     dom.buttons.help.addEventListener('click', show_help);
     dom.info.dictselect.addEventListener('change', select_dictionary);
@@ -1150,12 +1152,7 @@ function delay_call(fn) {
     window.setTimeout(fn, 100); // Delay by 100 ms
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Utilities for selecting and shuffling
-
-// Fisher–Yates shuffle:
-// https://en.wikipedia.org/wiki/Fisher–Yates_shuffle
+// Fisher–Yates shuffle: https://en.wikipedia.org/wiki/Fisher–Yates_shuffle
 function shuffle(arr) {
     for (let i = arr.length-1; i > 0; i--) {
         let index = Math.floor((i + 1) * Math.random());
@@ -1169,6 +1166,84 @@ function shuffle_by_vector_similarity(words, theme) {
         w.rank = Math.random() ** Math.max(w.sim, 0.01);
     }
     words.sort((w,v) => w.rank - v.rank);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Internationalisation (i.e., transation of the UI)
+
+var I18N = window.I18N || {};
+
+function i18n_translations() {
+    let radio = document.querySelector('input[name="language"]:checked');
+    let lang = radio && radio.value;
+    return I18N[lang] || {};
+}
+
+function i18n_create_radiobutton(lang) {
+}
+
+var i18n_default_translations = {elems: {}, elemtitles: {}, cssvars: {}};
+
+function i18n_initialize() {
+    let languages = Object.keys(I18N);
+    for (let lang of languages) {
+        // Create radio button for switching to the language
+        let info = I18N[lang].info;
+        // let div = dom.info.languages.appendChild(document.createElement("div"));
+        let radio = dom.info.languages.appendChild(document.createElement("input"));
+        radio.setAttribute('type', 'radio');
+        radio.setAttribute('name', 'language');
+        radio.setAttribute('value', lang);
+        radio.setAttribute('id', 'language-' + lang);
+        radio.addEventListener('change', i18n_translate_page);
+        let label = dom.info.languages.appendChild(document.createElement("label"));
+        label.setAttribute('for', 'language-' + lang);
+        label.title = info.name || info.code;
+        label.innerText = info.flag || info.code || info.name;
+
+        // Collect all default values from the initial HTML DOM
+        for (let key in I18N[lang].elems || {})
+            for (let elem of document.querySelectorAll(key)) 
+                i18n_default_translations.elems[key] = elem.innerText;
+        for (let key in I18N[lang].elemtitles || {}) 
+            for (let elem of document.querySelectorAll(key))
+                i18n_default_translations.elemtitles[key] = elem.title;
+        for (let key in I18N[lang].cssvars || {})
+            if (value = getComputedStyle(document.documentElement).getPropertyValue(key))
+                i18n_default_translations.cssvars[key] = value;
+    }
+    // Select the first language as default
+    document.querySelector('input[name="language"]').checked = true;
+    delay_call(i18n_translate_page);
+}
+
+function i18n_translate_page() {
+    let translations = i18n_translations();
+    if (!translations) return;
+    for (let key in i18n_default_translations.elems || {})
+        for (let elem of document.querySelectorAll(key))
+            elem.innerText = translations.elems && translations.elems[key] || i18n_default_translations.elems[key];
+    for (let key in i18n_default_translations.elemtitles || {})
+        for (let elem of document.querySelectorAll(key))
+            elem.title = translations.elemtitles && translations.elemtitles[key] || i18n_default_translations.elemtitles[key];
+    for (let key in i18n_default_translations.cssvars || {}) {
+        let value = translations.cssvars && translations.cssvars[key] || i18n_default_translations.cssvars[key];
+        document.documentElement.style.setProperty(key, value);
+    }
+}
+
+function i18n(strings, ...values) {
+    let translations = i18n_translations().strings || {};
+    function lookup(str) {
+        let parts = str.match(/^(\s*)(.*?)(\s*)$/);
+        return parts[1] + (translations[parts[2]] || parts[2]) + parts[3];
+    };
+    let result = lookup(strings[0]);
+    for (let i = 0; i < values.length; i++) {
+        result += values[i] + lookup(strings[i+1]);
+    }
+    return result;
 }
 
 
