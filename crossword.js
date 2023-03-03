@@ -35,7 +35,6 @@ function initialize() {
             heading:   document.querySelector("#wordlist-heading"),
             intro:     document.querySelector("#wordlist-intro"),
             filter:    document.querySelector("#wordlist-filter"),
-            wrapper:   document.querySelector("#wordlist-filter-wrapper"),
             content:   document.querySelector("#wordlist-content"),
         },
         buttons: {

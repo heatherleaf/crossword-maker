@@ -2,31 +2,50 @@
 :root {
     --mainfont: "Helvetica Neue", "Lucida Sans Unicode", Helvetica, Arial, sans-serif;
     --monofont: "Courier", monospace;
+    --small-size: 12px;
+    --normal-size: 16px;
+    --large-size: 24px;
     --margin: 32px;
     --spacing: 16px;
+    --github-logo-size: 64px;
+
+    --color-white: white;
+    --color-offwhite: #eee;
+    --color-lightgrey: lightgrey;
+    --color-grey: grey;
+    --color-darkgrey: dimgrey;
+    --color-black: black;
+    --color-yellow: yellow;
+    --color-darkyellow: gold;
+    --color-red: red;
+    --color-green: green;
+
+    --click-and-edit-title: "(Klicka och skriv korsordets titel)";
+    --click-and-edit-clue: "(Klicka och skriv ledtråden)";
 }
 
 body, button, input, select, option {
     font-family: var(--mainfont);
-    font-size: 16px;
+    font-size: var(--normal-size);
+    margin: 0; padding: 0;
+}
+
+body > div {
+    padding: var(--spacing);
 }
 
 h1 {
     margin: 0;
     padding: 0;
-    font-size: 30px;
+    white-space: nowrap;
 }
 
 a {
-    color: #333;
+    color: var(--color-darkgrey);
 }
 
 table {
     border-collapse: collapse;
-}
-
-.test {
-    background-color: cyan;
 }
 
 div {
@@ -37,8 +56,9 @@ div {
 #heading-container {
     display: flex;
     align-items: top;
-    border-bottom: 1px solid black;
-    padding: var(--spacing) 0;
+    border-bottom: 1px solid var(--color-black);
+    padding-left: var(--margin);
+    padding-right: var(--github-logo-size);
     margin-bottom: var(--spacing);
 }
 
@@ -54,17 +74,13 @@ div {
     padding-left: var(--spacing);
 }
 
-#button-upload-dictionary {
-    display: none;
-}
-
 select, button, label {
-    font-size: 16px;
-    border: 1px solid grey;
+    font-size: var(--normal-size);
+    border: 1px solid var(--color-grey);
     border-radius: 8px;
-    background-color: white;
-    color: black;
-    margin: 2px;
+    background-color: var(--color-white);
+    color: var(--color-black);
+    margin: 4px;
     padding: 6px 12px;
     cursor: pointer;
     -moz-appearance: none;
@@ -72,18 +88,36 @@ select, button, label {
     appearance: none;
 }
 
-input[type="checkbox"] {
+#menu-container input {
     display: none;
 }
 
-input[type="checkbox"]:checked + label {
-    background-color: black;
-    color: white;
+#menu-container input:checked + label {
+    background-color: var(--color-grey);
+    color: var(--color-white);
 }
 
 @media screen {
-    select:hover, button:hover, label:hover, #crossword-table .cwcell:hover {
-        background-color: #eee !important;
+    select:hover, label:hover, #menu-container button:hover {
+        background-color: var(--color-lightgrey) !important;
+        color: var(--color-black) !important;
+        border-color: var(--color-black);
+    }
+
+    #main-container button:hover {
+        background-color: var(--color-lightgrey);
+    }
+    
+    #crossword-table div.cwcell:hover {
+        background-color: var(--color-offwhite);
+    }
+
+    #crossword-table div.cwcell.blocked:hover {
+        background-color: var(--color-darkgrey);
+    }
+
+    #crossword-table div.cwcell.selected:hover {
+        background-color: var(--color-darkyellow);
     }
 }
 
@@ -108,23 +142,17 @@ input[type="checkbox"]:checked + label {
     }
 }
 
-#crossword-wrapper button, #wordlist-filter-wrapper button {
-    padding: 0;
-    height: 24px;
-    padding: 0 8px;
-    border: 0;
-    background-color: #eee;
-}
-
-#wordlist-content button {
-    padding: 1px 6px;
+#main-container button {
     font-family: var(--monofont);
-    font-size: 20px;
+    margin: 2px;
+    padding: 2px 8px;
+    border: 0;
+    background-color: var(--color-offwhite);
 }
 
 /* Arrow icon */
 select {
-    padding-right: 30px;
+    padding-right: var(--margin);
     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22grey%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
     background-repeat: no-repeat;
     background-position: right .7em top 50%;
@@ -151,14 +179,19 @@ select::-ms-expand {
     flex-shrink: 0;
 }
 
-#crossword-title:empty::after, .cluetext:empty::after {
-    content: "(Klicka och skriv)";
-    color: grey;
+#crossword-title:empty::after {
+    content: var(--click-and-edit-title);
+    color: var(--color-grey);
+}
+
+.cluetext:empty::after {
+    content: var(--click-and-edit-clue);
+    color: var(--color-grey);
 }
 
 #crossword-wrapper #crossword-theme {
     text-align: left;
-    color: green;
+    color: var(--color-green);
 }
 
 #crossword-theme:not(:empty)::before {
@@ -166,7 +199,7 @@ select::-ms-expand {
 }
 
 .clueword {
-    color: red;
+    color: var(--color-red);
 }
 
 #crossword-wrapper td {
@@ -182,7 +215,7 @@ select::-ms-expand {
 
 #crossword-table {
     table-layout: fixed;
-    background-color: #ccc;
+    background-color: var(--color-lightgrey);
     cursor: cell;
     user-select: none;
     -moz-user-select: none;
@@ -195,31 +228,31 @@ select::-ms-expand {
 }
 
 #crossword-table td {
-    border: black solid 1px;
+    border: var(--color-black) solid 1px;
     padding: 0;
 }
 
 #crossword-table .cwcell {
     padding: 0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 1.5em;
     height: 1.5em;
-    font-size: 24px;
+    font-size: var(--large-size);
     font-family: var(--monofont);
     position: relative;
 }
 
 #crossword-table .cwcell:not(:empty) {
-    background-color: white;
+    background-color: var(--color-white);
 }
 
 #crossword-table .cwcell::before {
-    color: black;
+    color: var(--color-black);
     position: absolute;
     font-family: var(--mainfont);
-    font-size: 12px;
+    font-size: var(--small-size);
     content: attr(data-cluenr);
     left: 2px;
     top: 0;
@@ -227,9 +260,9 @@ select::-ms-expand {
 
 #crossword-table .cwcell.right-turn::after,
 #crossword-table .cwcell.down-turn::after {
-    color: black;
+    color: var(--color-black);
     position: absolute;
-    font-size: 16px;
+    font-size: var(--normal-size);
 }
 
 #crossword-table .cwcell.right-turn::after {
@@ -245,16 +278,16 @@ select::-ms-expand {
 }
 
 #crossword-table .cwcell.selected {
-    background-color: yellow;
+    background-color: var(--color-yellow);
 }
 
 #crossword-table .cwcell.blocked {
     color: transparent;
-    background-color: black;
+    background-color: var(--color-black);
 }
 
 #crossword-table .cwcell.theme {
-    color: green;
+    color: var(--color-green);
 }
 
 #main-container.hide-solution {
@@ -282,15 +315,17 @@ select::-ms-expand {
 
 .debug {
     font-family: serif;
-    font-size: 12px;
-    color: red;
+    font-size: var(--small-size);
+    color: var(--color-red);
     padding: 2px;
 }
 
 /* "Fork me on GitHub", taken from: https://github.com/tholman/github-corners */
 .github-corner svg {
-    fill: grey; color: white;
+    fill: var(--color-grey); color: var(--color-white);
     position: absolute; top: 0; border: 0; right: 0;
+    width: var(--github-logo-size);
+    height: var(--github-logo-size);
 }
 .github-corner:hover .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
