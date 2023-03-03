@@ -50,6 +50,11 @@ function initialize() {
     dom.info.dictselect.addEventListener('change', select_dictionary);
     dom.info.hidesolution.addEventListener('change', show_hide_solution);
     dom.buttons.upload.addEventListener('change', upload_dictionary);
+    dom.buttons.reset.addEventListener('click', clear_crossword);
+    document.addEventListener('mouseup', on_mouse_up);
+    for (let btn of dom.buttons.resize) {
+        btn.addEventListener('click', resize_crossword.bind(btn));
+    }
 
     make_editable(dom.crossword.title);
 
@@ -340,11 +345,6 @@ function init_crossword(width, height) {
 
     for (let y = 0; y < height; y++) {
         insert_crossword_row(y, width);
-    }
-    document.addEventListener('mouseup', on_mouse_up);
-    dom.buttons.reset.addEventListener('click', clear_crossword);
-    for (let btn of dom.buttons.resize) {
-        btn.addEventListener('click', resize_crossword.bind(btn));
     }
     deselect_crossword();
 }
