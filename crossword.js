@@ -328,11 +328,13 @@ function selected_start_cell() {
 function deselect_start_cell() {
     let cell = selected_start_cell();
     if (cell) cell.classList.remove("selected-start");
+    dom.crossword.table.classList.remove("selecting");
 }
 
 function select_start_cell(cell) {
     deselect_start_cell();
     cell.classList.add("selected-start");
+    dom.crossword.table.classList.add("selecting");
 }
 
 
