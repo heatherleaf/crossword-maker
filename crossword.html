@@ -2,9 +2,10 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>Korsordsmakaren</title>
-<script src="dictionaries.js"></script>
+<title id="page-title">Korsordsmakaren</title>
 <script src="crossword.js"></script>
+<script src="dictionaries.js"></script>
+<script src="i18n-swedish.js"></script>
 <link rel="stylesheet" href="crossword.css" />
 <link rel="icon" type="image/png" href="favicon-32x32.png">
 </head>
@@ -22,8 +23,8 @@
 
 <div id="heading-container">
   <div>
-    <h1>Korsordsmakaren</h1>
-    <div>av <a href="https://github.com/heatherleaf/crossword-maker">Peter Ljunglöf</a></div>
+    <h1 id="main-heading">Korsordsmakaren</h1>
+    <div><span id="acknowledgements-by">av</span> <a href="https://github.com/heatherleaf/crossword-maker">Peter Ljunglöf</a></div>
   </div>
   <div id="menu-container">
     <div>
@@ -31,7 +32,7 @@
     </div>
     <div>
       <input type="file" id="button-upload-dictionary"/>
-      <label for="button-upload-dictionary">Ladda upp ett eget lexikon</label>
+      <label for="button-upload-dictionary" id="upload-button-text">Ladda upp ett eget lexikon</label>
     </div>
     <div id="ui-languages"></div>
     <div>
@@ -39,7 +40,7 @@
     </div>
     <div>
       <input type="checkbox" id="hide-solution" name="hide-solution"/>
-      <label for="hide-solution">Dölj lösningen</label>
+      <label for="hide-solution" id="hide-solution-text">Dölj lösningen</label>
     </div>
     <div>
       <button id="button-help">Hjälp</button>
@@ -89,12 +90,12 @@
 
   <div id="clues-container">
     <div>
-      <h3>Horisontella →</h3>
+      <h3 id="horizontal-clues-heading">Horisontella →</h3>
       <ol id="horizontal-clues">
       </ol>
     </div>
     <div>
-      <h3>Vertikala ↓</h3>
+      <h3 id="vertical-clues-heading">Vertikala ↓</h3>
       <ol id="vertical-clues">
       </ol>
     </div>

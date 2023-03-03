@@ -68,13 +68,14 @@ function initialize() {
 }
 
 function show_help() {
-    alert(`
-Markera en rad eller kolumn för att få förslag på ord,
-klicka sedan på ett förslag för att lägga till det.
-
-Dubbelklicka på en bokstav för att ta bort det ordet.
-Dubbelklicka på en tom ruta för att skriva in en ledtråd.
-`);
+    let help = [
+        i18n`Markera en rad eller kolumn för att få förslag på ord,`,
+        i18n`klicka sedan på ett förslag för att lägga till det.`,
+        "",
+        i18n`Dubbelklicka på en bokstav för att ta bort det ordet.`,
+        i18n`Dubbelklicka på en tom ruta för att skapa ett block.`,
+    ]
+    alert(help.join('\n'));
 }
 
 function show_hide_solution() {
@@ -207,7 +208,7 @@ function populate_dictionaries() {
             dictsize += Object.keys(subdict).length;
         }
         let opt = document.createElement('option');
-        opt.text = `${name} (${dictsize} ord)`;
+        opt.text = i18n`${name} (${dictsize} ord)`;
         opt.value = name;
         dom.info.dictselect.add(opt);
     }
@@ -216,7 +217,7 @@ function populate_dictionaries() {
     for (let name in default_dictionaries) {
         if (name in the_dictionaries) continue;
         let opt = document.createElement('option');
-        opt.text = `[Inte inläst] ${name}`;
+        opt.text = i18n`[Inte inläst] ${name}`;
         opt.value = name;
         dom.info.dictselect.add(opt);
     }
@@ -392,12 +393,12 @@ function insert_crossword_column(x, height=null) {
 
 function delete_crossword_row(y) {
     if (crossword_height() <= 2) {
-        alert("Ett korsord måste ha minst två rader!");
+        alert(i18n`Ett korsord måste ha minst två rader!`);
         return;
     }
     for (let x = 0; x < crossword_width(); x++) {
         if (!cell_isempty(crossword_cell(x, y))) {
-            alert("Raden är inte tom! Ta bort alla bokstäver och ledtrådar innan du kan ta bort den.");
+            alert(i18n`Raden är inte tom! Ta bort alla bokstäver och block innan du kan ta bort den.`);
             return;
         }
     }
@@ -412,12 +413,12 @@ function delete_crossword_row(y) {
 
 function delete_crossword_column(x) {
     if (crossword_width() <= 2) {
-        alert("Ett korsord måste ha minst två kolumner!");
+        alert(i18n`Ett korsord måste ha minst två kolumner!`);
         return;
     }
     for (let y = 0; y < crossword_height(); y++) {
         if (!cell_isempty(crossword_cell(x, y))) {
-            alert("Kolumnen är inte tom! Ta bort alla bokstäver och ledtrådar innan du kan ta bort den.");
+            alert(i18n`Kolumnen är inte tom! Ta bort alla bokstäver och block innan du kan ta bort den.`);
             return;
         }
     }
@@ -506,7 +507,7 @@ function add_word_to_crossword(word) {
     if (covered_words.length > 0) {
         let covered_text = covered_words.map((cw) => cells_to_word(get_cword_cells(cw))).join(", ");
         console.log(`Covered words: ${covered_text}`);
-        let ok = confirm(`Vill du ersätta ${covered_text} med ${cells_to_word(cells)}?`);
+        let ok = confirm(i18n`Vill du ersätta ${covered_text} med ${cells_to_word(cells)}?`);
         if (!ok) {
             save_and_redraw_crossword();
             return;
@@ -696,9 +697,8 @@ function delete_words_at_cell(cell) {
     let occupied_by = (cword) => get_cword_cells(cword).some((c) => c === cell);
     let to_remove = get_cwords().filter(occupied_by);
     if (to_remove.length === 0) return;
-    let ok = confirm("Är du säker att du vill ta bort " +
-                     (to_remove.length>1 ? "orden " : "ordet ") +
-                     to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(" och ") + "?");
+    let ok = confirm(i18n`Är du säker att du vill ta bort ` +
+                     to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(i18n` och `) + "?");
     if (!ok) return;
     console.log("Removing " + to_remove.map((cw) => cells_to_word(get_cword_cells(cw))).join(", "));
     to_remove.forEach(delete_cword);
@@ -707,7 +707,7 @@ function delete_words_at_cell(cell) {
 }
 
 function clear_crossword() {
-    let ok = confirm("Är du säker att du vill radera korsordet?");
+    let ok = confirm(i18n`Är du säker att du vill radera korsordet?`);
     if (!ok) return;
     console.log("Clearing the crossword");
     deselect_crossword();
@@ -1085,15 +1085,15 @@ function show_wordlist() {
     regex = new RegExp("^" + regex + "$");
     let filtered = the_wordlist.filter((cw) => cw.word.match(regex));
     if (DEBUG) console.log(`Filtered ${the_wordlist.length} words --> ${filtered.length} words`);
-    dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
+    dom.wordlist.intro.innerHTML = i18n`Filtrera genom att skriva bokstäver i sökrutan:`;
     if (filtered.length > 1) {
         set_visibility(dom.buttons.wordlist, true);
-        dom.buttons.wordlist.title = "Slumpa nya ord";
-        dom.buttons.wordlist.innerHTML = "&#x27f2;";
+        dom.buttons.wordlist.title = i18n`Slumpa nya ord`;
+        dom.buttons.wordlist.innerHTML = i18n`&#x27f2;`;
     } else if (filter_can_be_added()) {
         set_visibility(dom.buttons.wordlist, true);
-        dom.buttons.wordlist.title = "Lägg till i korsordet";
-        dom.buttons.wordlist.innerText = "Lägg till";
+        dom.buttons.wordlist.title = i18n`Lägg till i korsordet`;
+        dom.buttons.wordlist.innerText = i18n`Lägg till`;
     } else {
         set_visibility(dom.buttons.wordlist, false);
     }
@@ -1105,20 +1105,20 @@ function show_wordlist() {
     }
 
     if (the_wordlist.length === 0) {
-        set_wordlist_heading("Inga ord passar");
-        dom.wordlist.intro.innerHTML = "Vill du lägga till ett eget ord?";
+        set_wordlist_heading(i18n`Inga ord passar`);
+        dom.wordlist.intro.innerHTML = i18n`Vill du lägga till ett eget ord?`;
     } else if (filtered.length > config.maxresults) {
-        set_wordlist_heading(`Visar ${config.maxresults} ord av ${the_wordlist.length} passande`);
+        set_wordlist_heading(i18n`Visar ${config.maxresults} ord av ${the_wordlist.length} passande`);
         dom.wordlist.intro.innerHTML = 
-            "För många resultat, jag visar bara ett slumpmässigt urval.<br/>" +
-            "Filtrera genom att skriva bokstäver i sökrutan:";
+            i18n`För många resultat, jag visar bara ett slumpmässigt urval.` + "<br/>" +
+            i18n`Filtrera genom att skriva bokstäver i sökrutan:`;
         filtered.length = config.maxresults;
     } else if (filtered.length === the_wordlist.length) {
-        set_wordlist_heading(`Visar ${filtered.length} passande ord`);
-        dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
+        set_wordlist_heading(i18n`Visar ${filtered.length} passande ord`);
+        dom.wordlist.intro.innerHTML = i18n`Filtrera genom att skriva bokstäver i sökrutan:`;
     } else {
-        set_wordlist_heading(`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
-        dom.wordlist.intro.innerHTML = "Filtrera genom att skriva bokstäver i sökrutan:";
+        set_wordlist_heading(i18n`Visar ${filtered.length} ord av ${the_wordlist.length} passande`);
+        dom.wordlist.intro.innerHTML = i18n`Filtrera genom att skriva bokstäver i sökrutan:`;
     }
     for (let cw of filtered) {
         let btn = document.createElement('button');
