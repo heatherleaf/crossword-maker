@@ -9,6 +9,23 @@
 <script src="i18n-english.js"></script>
 <link rel="stylesheet" href="crossword.css" />
 <link rel="icon" type="image/png" href="favicon-32x32.png">
+
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    let u = "https://spraakbanken.gu.se/stats/";
+    _paq.push(['setTrackerUrl', u + 'matomo.php']);
+    _paq.push(['setSiteId', '44']);
+    let g = document.createElement('script');
+    let s = document.getElementsByTagName('script')[0];
+    g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+  })();
+</script>
+<!-- End Matomo Code -->
 </head>
 
 <body>
